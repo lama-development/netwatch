@@ -1,12 +1,16 @@
 # src/api/main.py
 
-import os, json, logging, threading, time
-from fastapi import FastAPI
+import os, json, logging, threading, time, asyncio
+from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from app.monitor import start_monitor, stop_monitor, load_settings
+from fastapi.templating import Jinja2Templates
 
+# Paths
 log_path = os.path.join("logs", "netwatch.log")
+templates_path = os.path.join("src", "app", "templates")
+templates = Jinja2Templates(directory=templates_path)
 
 # Global event to signal when to stop reading logs
 shutdown_event = threading.Event()
@@ -23,7 +27,7 @@ def setup_logger():
     # Logger configuration
     logging.basicConfig(
         level=getattr(logging, log_level), # Set log level dynamically
-        format='[%(asctime)s] - %(message)s',
+        format='[%(asctime)s] > %(message)s',
         encoding="utf-8",
         handlers=[
             logging.FileHandler(log_path), # Log to file
@@ -41,15 +45,29 @@ def read_devices():
     except FileNotFoundError:
         return []
 
-# Streams log file contents to the client as new lines are added
-async def read_logs():
-    with open(log_path, "r", encoding="utf-8") as file:
-        while not shutdown_event.is_set():
-            line = file.readline()
-            if not line:
-                time.sleep(1)  # No new log, wait for a while
-                continue
-            yield line  # Send new line to the client
+# Asynchronous generator to stream logs and show the full log on first access
+async def tail_log(file_path: str):
+    # Open the log file
+    with open(file_path, "r", encoding="utf-8") as f:
+        # Step 1: Yield the entire log file initially
+        f.seek(0)
+        # Read all the content of the log file up to the current point
+        while True:
+            line = f.readline()
+            if line:
+                yield f"data: {line.rstrip()}\n\n"
+            else:
+                # Once we've printed the entire file, switch to tailing the file
+                break
+
+        # Step 2: Start streaming new lines after we've printed the full file
+        f.seek(0, os.SEEK_END)  # Start tailing from the end of the file
+        while True:
+            line = f.readline()
+            if line:
+                yield f"data: {line.rstrip()}\n\n"
+            else:
+                await asyncio.sleep(0.1)  # Wait for new lines
 
 # Create an async context manager for lifespan
 @asynccontextmanager
@@ -81,5 +99,10 @@ def get_devices():
     return {"devices": devices}
 
 @app.get("/logs")
-def get_logs():
-    return StreamingResponse(read_logs(), media_type="text/plain")
+async def get_logs_page(request: Request):
+    # Render the dedicated HTML page
+    return templates.TemplateResponse("logs.html", {"request": request})
+
+@app.get("/stream")
+async def stream_logs():
+    return StreamingResponse(tail_log(log_path), media_type="text/event-stream")
