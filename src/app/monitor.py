@@ -88,7 +88,6 @@ def ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
 
 # Function to start the monitor
 def start_monitor():
-    setup_logger()
     # Load settings and devices
     settings = load_settings()
     devices = load_devices()

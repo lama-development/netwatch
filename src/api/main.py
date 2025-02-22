@@ -7,7 +7,7 @@ import time
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse
-from app.monitor import start_monitor
+from app.monitor import start_monitor, setup_logger
 
 # Load devices from JSON
 def read_devices():
@@ -36,7 +36,7 @@ async def read_logs():
 # Create an async context manager for lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.basicConfig(level=logging.INFO)
+    setup_logger()
     # Startup logic
     thread = threading.Thread(target=start_monitor)
     thread.daemon = True
