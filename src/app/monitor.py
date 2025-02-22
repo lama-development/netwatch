@@ -5,23 +5,11 @@ import logging
 import itertools
 from ping3 import ping
 
-# Function to load devices from config/devices.json
-def load_devices():
-    try:
-        with open("src/config/devices.json", "r") as file:
-            data = json.load(file)
-            return data["devices"]
-    except FileNotFoundError:
-        logging.error("File 'devices.json' not found in config folder.")
-        return []
-    except json.JSONDecodeError:
-        logging.error("Could not read 'devices.json' file.")
-        return []
-
 # Function to load settings from config/settings.json
 def load_settings():
+    settings_path = os.path.join("src", "config", "settings.json")
     try:
-        with open("src/config/settings.json", "r") as file:
+        with open(settings_path, "r") as file:
             data = json.load(file)
             return data
     except FileNotFoundError:
@@ -31,24 +19,19 @@ def load_settings():
         logging.error("Could not read 'settings.json' file.")
         return {}
 
-def setup_logger():
-    # Load settings from JSON file
-    settings = load_settings()
-    log_level = settings.get("log_level", "INFO").upper()  # Default to INFO if not found
-    # Create 'logs' directory if it doesn't exist
-    if not os.path.exists("logs"):
-        os.makedirs("logs")
-    # Logger configuration
-    logging.basicConfig(
-        level=getattr(logging, log_level), # Set log level dynamically
-        format='[%(asctime)s] - %(message)s',
-        encoding="utf-8",
-        handlers=[
-            logging.FileHandler(os.path.join("logs", "netwatch.log")), # Log to file
-            logging.StreamHandler()  # Log to console as well
-        ]
-    )
-    logging.info("NetWatch logger initiated")
+# Function to load devices from config/devices.json
+def load_devices():
+    devices_path = os.path.join("src", "config", "devices.json")
+    try:
+        with open(devices_path, "r") as file:
+            data = json.load(file)
+            return data["devices"]
+    except FileNotFoundError:
+        logging.error("File 'devices.json' not found in config folder.")
+        return []
+    except json.JSONDecodeError:
+        logging.error("Could not read 'devices.json' file.")
+        return []
 
 # Function to create a device cycle generator
 def device_cycle(devices):
@@ -110,4 +93,4 @@ def start_monitor():
             logging.info(f"Cycle completed. Waiting {check_interval} seconds before next cycle...")
             time.sleep(check_interval) 
     except KeyboardInterrupt:
-        logging.info("NetWatch terminated by user")
+        logging.info("NetWatch terminated by user.")

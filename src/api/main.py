@@ -7,7 +7,30 @@ import time
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse
-from app.monitor import start_monitor, setup_logger
+from app.monitor import start_monitor, load_settings
+
+log_path = os.path.join("logs", "netwatch.log")
+
+def setup_logger():
+    # Load settings from JSON file
+    settings = load_settings()
+    log_level = settings.get("log_level", "INFO").upper()  # Default to INFO if not found
+    # Create 'logs' directory if it doesn't exist
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+    # Clear the log file on startup
+    open(log_path, "w").close()
+    # Logger configuration
+    logging.basicConfig(
+        level=getattr(logging, log_level), # Set log level dynamically
+        format='[%(asctime)s] - %(message)s',
+        encoding="utf-8",
+        handlers=[
+            logging.FileHandler(log_path), # Log to file
+            logging.StreamHandler()  # Log to console as well
+        ]
+    )
+    logging.info("NetWatch logger initiated.")
 
 # Load devices from JSON
 def read_devices():
@@ -18,14 +41,9 @@ def read_devices():
     except FileNotFoundError:
         return []
 
+# Streams log file contents to the client as new lines are added
 async def read_logs():
-    # Streams log file contents to the client as new lines are added
-    log_file_path = os.path.join("logs", "netwatch.log")
-
-    if not os.path.exists(log_file_path):
-        os.makedirs("logs")
-    
-    with open(log_file_path, "r", encoding="utf-8") as file:
+    with open(log_path, "r", encoding="utf-8") as file:
         while True:
             line = file.readline()
             if not line:
@@ -41,12 +59,12 @@ async def lifespan(app: FastAPI):
     thread = threading.Thread(target=start_monitor)
     thread.daemon = True
     thread.start()
-    logging.info("NetWatch started in the background")
-    
+    logging.info("NetWatch started in the background.")
     yield  # FastAPI will continue running
     
-    # Shutdown logic (if any)
-    logging.info("NetWatch API has been shutdown")
+    # Shutdown logic
+    logging.info("NetWatch terminated by user.")
+    thread.join()
 
 # Create the FastAPI app and use the lifespan event
 app = FastAPI(lifespan=lifespan)
