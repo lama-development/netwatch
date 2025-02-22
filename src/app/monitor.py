@@ -1,9 +1,9 @@
-import os
-import time
-import json
-import logging
-import itertools
+# src/app/monitor.py
+
+import os, time, json, logging, itertools, threading
 from ping3 import ping
+
+shutdown_event = threading.Event()  # Create a global shutdown event
 
 # Function to load settings from config/settings.json
 def load_settings():
@@ -87,10 +87,10 @@ def start_monitor():
     logging.info("Starting device monitoring cycle...")
     device_gen = device_cycle(devices)
     # Main loop
-    try:
-        while True:
-            ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
-            logging.info(f"Cycle completed. Waiting {check_interval} seconds before next cycle...")
-            time.sleep(check_interval) 
-    except KeyboardInterrupt:
-        logging.info("NetWatch terminated by user.")
+    while not shutdown_event.is_set():  # Stop when event is set
+        ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
+        logging.info(f"Cycle completed. Waiting {check_interval} seconds before next cycle...")
+        time.sleep(check_interval) 
+
+def stop_monitor():
+    shutdown_event.set()  # Signal the monitor to stop

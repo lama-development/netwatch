@@ -1,15 +1,15 @@
-import os
-import json
-import logging  
-import threading
-#import asyncio
-import time
+# src/api/main.py
+
+import os, json, logging, threading, time
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse
-from app.monitor import start_monitor, load_settings
+from app.monitor import start_monitor, stop_monitor, load_settings
 
 log_path = os.path.join("logs", "netwatch.log")
+
+# Global event to signal when to stop reading logs
+shutdown_event = threading.Event()
 
 def setup_logger():
     # Load settings from JSON file
@@ -44,7 +44,7 @@ def read_devices():
 # Streams log file contents to the client as new lines are added
 async def read_logs():
     with open(log_path, "r", encoding="utf-8") as file:
-        while True:
+        while not shutdown_event.is_set():
             line = file.readline()
             if not line:
                 time.sleep(1)  # No new log, wait for a while
@@ -56,15 +56,17 @@ async def read_logs():
 async def lifespan(app: FastAPI):
     setup_logger()
     # Startup logic
-    thread = threading.Thread(target=start_monitor)
-    thread.daemon = True
+    thread = threading.Thread(target=start_monitor, daemon=True)
     thread.start()
     logging.info("NetWatch started in the background.")
-    yield  # FastAPI will continue running
+    yield  # FastAPI keeps running until shutdown
     
     # Shutdown logic
-    logging.info("NetWatch terminated by user.")
-    thread.join()
+    logging.info("NetWatch is shutting down...")
+    stop_monitor()
+    shutdown_event.set()  # Signal to stop reading logs
+    thread.join(timeout=3)  # Wait for it to exit cleanly (timeout just in case)
+    logging.info("NetWatch has been terminated.")
 
 # Create the FastAPI app and use the lifespan event
 app = FastAPI(lifespan=lifespan)

@@ -15,3 +15,6 @@ __pycache__/
 
 # Ignore editor-specific files
 .vscode/
+
+# Ignore environment files
+.env
