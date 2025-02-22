@@ -1,9 +1,7 @@
+/* src/assets/css/styles.css */
+
 @import "tailwindcss";
 @import url("fonts/sathoshi.css");
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
     --font-regular: 500; 

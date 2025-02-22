@@ -93,8 +93,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
-def read_root():
-    return {"message": "NetWatch API is running!"}
+def read_root(request: Request):
+    # Render an HTML page as the main dashboard
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/devices")
 def get_devices():

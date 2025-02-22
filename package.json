@@ -1,0 +1,30 @@
+{
+  "name": "netwatch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "postcss src/assets/css/styles.css -o dist/css/tailwind.css --watch",
+    "build:css": "postcss src/assets/css/styles.css -o dist/css/tailwind.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lama-development/netwatch.git"
+  },
+  "keywords": [],
+  "author": "lama-development",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lama-development/netwatch/issues"
+  },
+  "homepage": "https://github.com/lama-development/netwatch#readme",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.0.8",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.0",
+    "tailwindcss": "^4.0.8"
+  }
+}
