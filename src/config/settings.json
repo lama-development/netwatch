@@ -1,0 +1,7 @@
+{
+    "ping_timeout": 1,
+    "log_level": "INFO",
+    "check_interval": 10,
+    "retry_interval": 5,
+    "max_retries": 3
+}

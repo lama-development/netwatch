@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import url("fonts/sathoshi.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --font-regular: 500; 
+    --font-semibold: 700; 
+    --font-bold: 900; 
+}
+
+* {
+    font-family: "Satoshi", sans-serif;
+}
+
+body {
+    background-color: #f7fafc;
+    font-weight: var(--font-regular);
+}
+
+h1 {
+    color: #2d3748;
+    font-weight: var(--font-bold);
+}

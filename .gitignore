@@ -1,0 +1,14 @@
+# Ignore virtual environments
+.venv/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore build files
+dist/
+
+# Ignore log files
+logs/
+
+# Ignore editor-specific files
+.vscode/
