@@ -10,5 +10,8 @@ dist/
 # Ignore log files
 logs/
 
+# Ignore python cache files
+__pycache__/
+
 # Ignore editor-specific files
 .vscode/
