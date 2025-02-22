@@ -1,11 +1,14 @@
 # src/api/main.py
 
-import os, json, logging, threading, time, asyncio
+import os, sys, json, logging, threading, time, asyncio
 from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse, HTMLResponse
-from app.monitor import start_monitor, stop_monitor, load_settings
 from fastapi.templating import Jinja2Templates
+
+# Add the src directory to sys.path explicitly
+sys.path.append(os.getenv("PYTHONPATH", "src")) 
+from app.monitor import start_monitor, stop_monitor, load_settings
 
 # Paths
 log_path = os.path.join("logs", "netwatch.log")
