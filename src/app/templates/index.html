@@ -1,18 +1,35 @@
+<!-- src/app/templates/index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NetWatch Dashboard</title>
-    <!-- Link to the compiled Tailwind CSS -->
-    <link href="/dist/css/tailwind.css" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
 <body>
-    <div class="container mx-auto p-6">
-        <h1 class="text-4xl font-bold mb-4">NetWatch</h1>
-        <p class="text-lg">Monitor network devices and live logs.</p>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>NetWatch</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/devices">Dispositivi</a></li>
+                    <li><a href="/logs">Logs</a></li>
+                    <li><a href="#">Impostazioni</a></li>
+                    <li><a href="#">Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <h1>Benvenuto</h1>
+            <p>Questa è la tua area di monitoraggio.</p>
+        </main>
     </div>
-    <a href="/logs" class="button">View Live Logs</a>
-    <a href="/devices" class="button">View Devices</a>
 </body>
 </html>

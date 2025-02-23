@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 # Add the src directory to sys.path explicitly
 sys.path.append(os.getenv("PYTHONPATH", "src")) 
@@ -91,6 +92,9 @@ async def lifespan(app: FastAPI):
 
 # Create the FastAPI app and use the lifespan event
 app = FastAPI(lifespan=lifespan)
+
+# Serve static files from the 'assets' directory
+app.mount("/static", StaticFiles(directory="src/assets"), name="static")
 
 @app.get("/")
 def read_root(request: Request):
