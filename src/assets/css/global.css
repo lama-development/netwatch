@@ -1,0 +1,31 @@
+/* /src/assets/css/global.css */
+
+@import url("satoshi.css");
+
+:root {
+    /* Light mode colors */
+    --color-bg: #fff;
+    --color-navbar: #f5f5f5;
+    --color-hover: #eaeaec;
+    --color-accent: #4894e7;
+    --color-text: #000;
+    /* Font weights */
+    --font-regular: 500;
+    --font-semibold: 700;
+    --font-bold: 900;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark mode colors */
+        --color-bg: #232323;
+        --color-navbar: #171717;
+        --color-hover: #2f2f2f;
+        --color-accent: #4894e7;
+        --color-text: #fff;
+    }
+} 
+
+* {
+    font-family: "Satoshi-Variable", sans-serif;
+}

@@ -1,31 +1,50 @@
-<!-- src/app/templates/logs.html -->
+<!-- /src/app/templates/logs.html -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Live Logs</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - NetWatch</title>
+    <!-- JavaScript -->
+    <script src="/static/js/nav.js"></script>
+    <script src="/src/assets/js/nav.js"></script> <!-- TO DELETE IN PROD -->
     <style>
-    body { font-family: monospace; background: #111; color: #eee; }
-    pre { white-space: pre-wrap; }
+        body {
+            font-family: monospace;
+            background: #111;
+            color: #eee;
+        }
+
+        pre {
+            white-space: pre-wrap;
+        }
     </style>
 </head>
+
 <body>
+    <!-- Navbar -->
+    <div id="navbar-component"></div>
+    <!-- Sidebar -->
+    <div id="sidebar-component"></div>
     <h1>Live Logs</h1>
     <pre id="log"></pre>
     <script>
-    const logElement = document.getElementById("log");
-    const evtSource = new EventSource("/stream");
-    evtSource.onmessage = function(event) {
-        if (event.data) {
-        logElement.innerHTML += event.data + "\n";
-        // Auto-scroll to the bottom
-        window.scrollTo(0, document.body.scrollHeight);
-        }
-    };
-    evtSource.onerror = function(err) {
-        console.error("EventSource failed:", err);
-        evtSource.close();
-    };
+        const logElement = document.getElementById("log");
+        const evtSource = new EventSource("/stream");
+        evtSource.onmessage = function (event) {
+            if (event.data) {
+                logElement.innerHTML += event.data + "\n";
+                // Auto-scroll to the bottom
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        };
+        evtSource.onerror = function (err) {
+            console.error("EventSource failed:", err);
+            evtSource.close();
+        };
     </script>
 </body>
+
 </html>

@@ -1,0 +1,137 @@
+/* /src/assets/css/sidebar.css */
+
+@import "global.css";
+
+.sidebar {
+    background-color: var(--color-navbar);
+    border-right: 1px solid var(--color-hover);
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 80px 0;
+    overflow-y: scroll;
+    transition: all 0.1s ease; 
+    z-index: 9;
+}
+
+.sidebar.collapsed {
+    padding: 80px 0;
+    width: 80px;
+}
+
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar-content {
+    position: relative;
+}
+
+.sidebar-items {
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar-icon {
+    color: var(--color-text);
+    position: relative;
+    font-size: 22px;
+    min-width: 50px;
+    line-height: 40px;
+    display: inline-block;
+    text-align: center;
+    border-radius: 6px;
+}
+
+.sidebar .sidebar-link {
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 8px 16px;  
+}
+
+.sidebar-link:hover {
+    background: var(--color-hover);
+}
+
+.bottom-content {
+    position: fixed;
+    bottom: 60px;
+    width: 250px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.bottom {
+    color: var(--color-text);
+    border-top: 1px solid var(--color-hover);
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 18px 0;
+    text-align: center;
+    width: 100%;
+}
+
+.bottom:hover {
+    background: var(--color-hover);
+    border-bottom: 3px solid var(--color-hover);
+}
+
+.bottom i {
+    font-size: 20px;
+}
+
+.sidebar.collapsed .bottom-content {
+    width: 80px;
+}
+
+.sidebar.collapsed .bottom span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-collapsed {
+    display: none;
+}
+
+.sidebar:not(.collapsed) .sidebar-expanded {
+    display: none;
+}
+
+@media screen and (max-width: 768px) {
+    .navbar-search {
+        display: none;
+    }
+
+    .sidebar {
+        width: 200px;
+        padding: 60px 0;
+    }
+    
+    .sidebar.collapsed {
+        width: 60px;
+        padding: 60px 0;
+    }
+
+    .bottom-content {
+        width: 200px;
+    }
+
+    .sidebar.collapsed .bottom-content {
+        width: 60px;
+    }
+}

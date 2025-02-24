@@ -1,0 +1,71 @@
+/* /src/assets/css/navbar.css */
+
+@import "global.css";
+
+.navbar {
+    background-color: var(--color-navbar);
+    border-bottom: 1px solid var(--color-hover);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    z-index: 10;
+}
+
+.navbar-logo {
+    color: var(--color-text);
+    font-weight: var(--font-semibold);
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    font-size: 22px;
+    font-weight: 500;
+}
+
+.navbar img {
+    width: 30px;
+    height: 30px;
+}
+
+.navbar-search {
+    height: 40px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.navbar-search input {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-hover);
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 18px;
+    outline: none;
+    padding: 0 20px;
+}
+
+.navbar-search input:focus {
+    border: 1px solid var(--color-accent);
+}
+
+.navbar-content {
+    display: flex;
+    align-items: center;
+    column-gap: 25px;
+}
+
+.navbar-content i {
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.navbar-profile {
+    border: 1px solid var(--color-hover);
+    border-radius: 50%;
+}

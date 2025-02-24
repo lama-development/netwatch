@@ -1,4 +1,4 @@
-<!-- src/app/templates/index.html -->
+<!-- /src/app/templates/index.html -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,81 +11,22 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <!-- CSS -->
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/src/assets/css/dashboard.css"> <!-- TO DELETE IN PROD -->
     <!-- Icons -->
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- JavaScript -->
+    <script src="/static/js/nav.js"></script>
+    <script src="/src/assets/js/nav.js"></script> <!-- TO DELETE IN PROD -->
 </head>
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="logo_item">
-            <i class="bx bx-menu" id="sidebarOpen"></i>
-            <img src="/static/img/netwatch.png" alt="NetWatch logo">NetWatch
-        </div>
-        <div class="search_bar">
-            <input type="text" placeholder="Search" />
-        </div>
-        <div class="navbar_content">
-            <i class="bi bi-grid"></i>
-            <i class='bx bx-sun' id="darkLight"></i>
-            <i class='bx bx-bell'></i>
-            <img src="/static/img/user.png" alt="" class="profile" />
-        </div>
-    </nav>
+    <div id="navbar-component"></div>
     <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="menu_content">
-            <ul class="menu_items">
-                <li class="item">
-                <a href="#" class="nav_link">
-                    <span class="navlink_icon">
-                        <i class="bx bx-home-alt"></i>
-                    </span>
-                    <span class="navlink">Dashboard</span>
-                </a>
-                </li>
-            </ul>
-            <ul class="menu_items">
-                <li class="item">
-                    <a href="/devices" class="nav_link">
-                        <span class="navlink_icon">
-                            <i class="bx bx-devices"></i>
-                        </span>
-                        <span class="navlink">Devices</span>
-                    </a>
-                </li>
-                <li class="item">
-                    <a href="/logs" class="nav_link">
-                        <span class="navlink_icon">
-                            <i class="bx bx-terminal"></i>
-                        </span>
-                        <span class="navlink">Logs</span>
-                    </a>
-                </li>
-                <li class="item">
-                    <a href="#" class="nav_link">
-                        <span class="navlink_icon">
-                            <i class="bx bx-cog"></i>
-                        </span>
-                        <span class="navlink">Settings</span>
-                    </a>
-                </li>
-            </ul>
-            <!-- Sidebar Open / Close -->
-            <div class="bottom_content">
-                <div class="bottom expand_sidebar">
-                    <span></span>
-                    <i class='bx bx-arrow-to-right'></i>
-                </div>
-                <div class="bottom collapse_sidebar">
-                    <span>Collapse</span>
-                    <i class='bx bx-arrow-to-left'></i>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div id="sidebar-component"></div>
     <!-- JavaScript -->
-    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/src/assets/js/theme.js"></script> <!-- TO DELETE IN PROD -->
 </body>
 
 </html>

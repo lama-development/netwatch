@@ -1,4 +1,4 @@
-# src/app/monitor.py
+# /src/app/monitor.py
 
 import os, time, json, logging, itertools, threading
 from ping3 import ping
