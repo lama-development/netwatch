@@ -1,5 +1,7 @@
 .PHONY: venv api install-reqs update-reqs 
 
+# mingw32-make.exe
+
 # Activate Virtual Environment (Not Working)
 venv:
 ifeq ($(OS),Windows_NT)
@@ -13,7 +15,7 @@ api:
 ifeq ($(OS),Windows_NT)
 	fastapi dev src/api/main.py
 else
-	sudo /home/davide/dev/netwatch/.venv/bin/fastapi dev src/api/main.py
+	sudo $(CURDIR)/.venv/bin/fastapi dev src/api/main.py
 endif
 
 # Install dependencies

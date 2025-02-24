@@ -7,6 +7,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NetWatch</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/src/assets/favicon.ico">
     <!-- CSS -->
     <link rel="stylesheet" href="/src/assets/css/dashboard.css">
     <!-- Icons -->
@@ -18,7 +20,7 @@
     <nav class="navbar">
         <div class="logo_item">
             <i class="bx bx-menu" id="sidebarOpen"></i>
-            <img src="images/logo.png" alt="">NetWatch
+            <img src="/src/assets/img/netwatch.png" alt="NetWatch logo">NetWatch
         </div>
         <div class="search_bar">
             <input type="text" placeholder="Search" />
@@ -27,7 +29,7 @@
             <i class="bi bi-grid"></i>
             <i class='bx bx-sun' id="darkLight"></i>
             <i class='bx bx-bell'></i>
-            <img src="images/profile.jpg" alt="" class="profile" />
+            <img src="/src/assets/img/user.png" alt="" class="profile" />
         </div>
     </nav>
     <!-- Sidebar -->
@@ -35,12 +37,12 @@
         <div class="menu_content">
             <ul class="menu_items">
                 <li class="item">
-                <div href="#" class="nav_link">
+                <a href="#" class="nav_link">
                     <span class="navlink_icon">
                         <i class="bx bx-home-alt"></i>
                     </span>
                     <span class="navlink">Dashboard</span>
-                </div>
+                </a>
                 </li>
             </ul>
             <ul class="menu_items">
@@ -73,11 +75,11 @@
             <div class="bottom_content">
                 <div class="bottom expand_sidebar">
                     <span></span>
-                    <i class='bx bx-log-in'></i>
+                    <i class='bx bx-arrow-to-right'></i>
                 </div>
                 <div class="bottom collapse_sidebar">
-                    <span></span>
-                    <i class='bx bx-log-out'></i>
+                    <span>Close</span>
+                    <i class='bx bx-arrow-to-left'></i>
                 </div>
             </div>
         </div>
