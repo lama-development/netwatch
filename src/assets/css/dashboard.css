@@ -194,6 +194,7 @@ body {
 
 .bottom:hover {
     background: var(--color-hover);
+    border-bottom: 3px solid var(--color-hover);
 }
 
 .bottom i {
