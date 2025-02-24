@@ -2,34 +2,88 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetWatch Dashboard</title>
+    <title>Dashboard - NetWatch</title>
     <!-- CSS -->
-    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/src/assets/css/dashboard.css">
+    <!-- Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 </head>
+
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>NetWatch</h2>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo_item">
+            <i class="bx bx-menu" id="sidebarOpen"></i>
+            <img src="images/logo.png" alt="">NetWatch
+        </div>
+        <div class="search_bar">
+            <input type="text" placeholder="Search" />
+        </div>
+        <div class="navbar_content">
+            <i class="bi bi-grid"></i>
+            <i class='bx bx-sun' id="darkLight"></i>
+            <i class='bx bx-bell'></i>
+            <img src="images/profile.jpg" alt="" class="profile" />
+        </div>
+    </nav>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="menu_content">
+            <ul class="menu_items">
+                <li class="item">
+                <div href="#" class="nav_link">
+                    <span class="navlink_icon">
+                        <i class="bx bx-home-alt"></i>
+                    </span>
+                    <span class="navlink">Dashboard</span>
+                </div>
+                </li>
+            </ul>
+            <ul class="menu_items">
+                <li class="item">
+                    <a href="/devices" class="nav_link">
+                        <span class="navlink_icon">
+                            <i class="bx bx-flag"></i>
+                        </span>
+                        <span class="navlink">Devices</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="/logs" class="nav_link">
+                        <span class="navlink_icon">
+                            <i class="bx bx-medal"></i>
+                        </span>
+                        <span class="navlink">Logs</span>
+                    </a>
+                </li>
+                <li class="item">
+                    <a href="#" class="nav_link">
+                        <span class="navlink_icon">
+                            <i class="bx bx-cog"></i>
+                        </span>
+                        <span class="navlink">Settings</span>
+                    </a>
+                </li>
+            </ul>
+            <!-- Sidebar Open / Close -->
+            <div class="bottom_content">
+                <div class="bottom expand_sidebar">
+                    <span></span>
+                    <i class='bx bx-log-in'></i>
+                </div>
+                <div class="bottom collapse_sidebar">
+                    <span></span>
+                    <i class='bx bx-log-out'></i>
+                </div>
             </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="/">Dashboard</a></li>
-                    <li><a href="/devices">Dispositivi</a></li>
-                    <li><a href="/logs">Logs</a></li>
-                    <li><a href="#">Impostazioni</a></li>
-                    <li><a href="#">Logout</a></li>
-                </ul>
-            </nav>
-        </aside>
-        
-        <main class="main-content">
-            <h1>Benvenuto</h1>
-            <p>Questa è la tua area di monitoraggio.</p>
-        </main>
-    </div>
+        </div>
+    </nav>
+    <!-- JavaScript -->
+    <script src="/src/assets/js/dashboard.js"></script>
 </body>
+
 </html>
