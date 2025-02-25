@@ -96,9 +96,16 @@ app = FastAPI(lifespan=lifespan)
 # Serve static files from the 'assets' directory
 app.mount("/static", StaticFiles(directory="src/assets"), name="static")
 
+@app.get("/navbar")
+async def get_navbar(request: Request):
+    return templates.TemplateResponse("navbar.html", {"request": request})
+
+@app.get("/sidebar")
+async def get_sidebar(request: Request):
+    return templates.TemplateResponse("sidebar.html", {"request": request})
+
 @app.get("/")
 def read_root(request: Request):
-    # Render an HTML page as the main dashboard
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/devices")
