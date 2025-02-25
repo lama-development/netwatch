@@ -7,20 +7,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logs - NetWatch</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/logs.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <!-- JavaScript -->
     <script src="/static/js/nav.js"></script>
-    <script src="/src/assets/js/nav.js"></script> <!-- TO DELETE IN PROD -->
-    <style>
-        body {
-            font-family: monospace;
-            background: #111;
-            color: #eee;
-        }
-
-        pre {
-            white-space: pre-wrap;
-        }
-    </style>
+    <script src="/static/js/theme.js"></script>
 </head>
 
 <body>
@@ -28,22 +23,55 @@
     <div id="navbar-component"></div>
     <!-- Sidebar -->
     <div id="sidebar-component"></div>
-    <h1>Live Logs</h1>
     <pre id="log"></pre>
     <script>
         const logElement = document.getElementById("log");
         const evtSource = new EventSource("/stream");
+
         evtSource.onmessage = function (event) {
             if (event.data) {
-                logElement.innerHTML += event.data + "\n";
+
+                const timestamp = event.data.match(/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})\] > /);
+                const message = event.data.replace(timestamp ? timestamp[0] : '', '').trim();
+
+                const newLogMessage = document.createElement("div");
+                const timestampElement = document.createElement("span");
+                timestampElement.classList.add("log-timestamp");
+                timestampElement.textContent = timestamp ? timestamp[0] : ''; 
+                const messageElement = document.createElement("span");
+
+                // Define color based on log message
+                if (message.includes("NetWatch")) {
+                    messageElement.classList.add("log-system");
+                } else if (message.includes("online")) {
+                    messageElement.classList.add("log-online");
+                } else if (message.includes("retrying")) {
+                    messageElement.classList.add("log-retrying");
+                } else if (message.includes("offline")) {
+                    messageElement.classList.add("log-offline");
+                } else {
+                    messageElement.classList.add("log-default");
+                }
+
+                messageElement.textContent = message; 
+
+                // Aggiungi il timestamp e il messaggio al div
+                newLogMessage.appendChild(timestampElement);
+                newLogMessage.appendChild(messageElement);
+
+                // Aggiungi il messaggio di log al container
+                logElement.appendChild(newLogMessage);
+
                 // Auto-scroll to the bottom
                 window.scrollTo(0, document.body.scrollHeight);
             }
         };
+
         evtSource.onerror = function (err) {
             console.error("EventSource failed:", err);
             evtSource.close();
         };
+
     </script>
 </body>
 

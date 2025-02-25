@@ -1,0 +1,66 @@
+/* /src/assets/css/logs.css */
+
+@import "navbar.css";
+@import "sidebar.css";
+
+:root {
+    --color-console-default: #fff;
+    --color-console-system: #729fcf;
+    --color-console-online: #8ae234;
+    --color-console-retrying: #fce94f;
+    --color-console-offline: #ef2929;
+    /* --color-console-error: #ad7fa8; */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-bg);
+    margin: 6rem 14rem;
+}
+
+#log {
+    background-color: #000;
+    border: 1px solid var(--color-border);
+    color: var(--color-text); 
+    font-family: monospace;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow: scroll;
+    height: 80vh;
+}
+
+.log-timestamp {
+    font-family: monospace;
+    color: var(--color-console-default); 
+    font-weight: var(semibold);
+}
+
+.log-default {
+    font-family: monospace;
+    color: var(--color-console-default); 
+}
+
+.log-system {
+    font-family: monospace;
+    color: var(--color-console-system); 
+}
+
+.log-online {
+    font-family: monospace;
+    color: var(--color-console-online); 
+}
+
+.log-retrying {
+    font-family: monospace;
+    color: var(--color-console-retrying); 
+}
+
+.log-offline {
+    font-family: monospace;
+    color: var(--color-console-offline); 
+}
