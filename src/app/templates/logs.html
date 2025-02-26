@@ -30,10 +30,11 @@
 
         evtSource.onmessage = function (event) {
             if (event.data) {
-
+                // Extract timestamp and message from log using regex
                 const timestamp = event.data.match(/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})\] > /);
                 const message = event.data.replace(timestamp ? timestamp[0] : '', '').trim();
-
+                
+                // Create new log  message and timestamp element
                 const newLogMessage = document.createElement("div");
                 const timestampElement = document.createElement("span");
                 timestampElement.classList.add("log-timestamp");
@@ -41,9 +42,7 @@
                 const messageElement = document.createElement("span");
 
                 // Define color based on log message
-                if (message.includes("NetWatch")) {
-                    messageElement.classList.add("log-system");
-                } else if (message.includes("online")) {
+                if (message.includes("online")) {
                     messageElement.classList.add("log-online");
                 } else if (message.includes("retrying")) {
                     messageElement.classList.add("log-retrying");
@@ -55,11 +54,11 @@
 
                 messageElement.textContent = message; 
 
-                // Aggiungi il timestamp e il messaggio al div
+                // Add timestamp and message to the new log message
                 newLogMessage.appendChild(timestampElement);
                 newLogMessage.appendChild(messageElement);
 
-                // Aggiungi il messaggio di log al container
+                // Append new log message to the log element
                 logElement.appendChild(newLogMessage);
 
                 // Auto-scroll to the bottom
@@ -71,6 +70,10 @@
             console.error("EventSource failed:", err);
             evtSource.close();
         };
+
+        window.addEventListener("beforeunload", function () {
+            evtSource.close();
+        });
 
     </script>
 </body>

@@ -5,12 +5,12 @@
             "ip": "192.168.1.1"
         },
         {
-            "name": "Computer",
+            "name": "Desktop",
             "ip": "192.168.1.25"
         },
         {
-            "name": "Stampante",
-            "ip": "192.168.1.50"
+            "name": "Laptop",
+            "ip": "192.168.104.67"
         }
     ]
 }

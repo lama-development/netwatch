@@ -37,7 +37,6 @@ body {
 .log-timestamp {
     font-family: monospace;
     color: var(--color-console-default); 
-    font-weight: var(semibold);
 }
 
 .log-default {
