@@ -1,4 +1,4 @@
-// /src/assets/js/theme.js
+// /src/assets/js/navbar.js
 
 const lightTheme = {
     '--color-bg': '#fff',

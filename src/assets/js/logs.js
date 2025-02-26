@@ -2,6 +2,16 @@
 
 function initLogStream() {
     const logElement = document.getElementById("log");
+    let autoScroll = true;
+    const scrollThreshold = 10; // Pixels threshold to consider "at bottom"
+
+    // Listen for scroll events on the log element
+    logElement.addEventListener('scroll', () => {
+        // Determine if the log container is scrolled to the bottom (within a threshold)
+        const atBottom = logElement.scrollHeight - logElement.scrollTop - logElement.clientHeight < scrollThreshold;
+        autoScroll = atBottom;
+    });
+
     const evtSource = new EventSource("/stream");
 
     evtSource.onmessage = function (event) {
@@ -37,8 +47,10 @@ function initLogStream() {
             // Add new log message to the log element
             logElement.appendChild(newLogMessage);
 
-            // Auto-scroll to end of page
-            // window.scrollTo(0, document.body.scrollHeight);
+            // Auto-scroll to the bottom if autoScroll is true
+            if (autoScroll) {
+                logElement.scrollTop = logElement.scrollHeight;
+            }
         }
     };
 
@@ -52,5 +64,5 @@ function initLogStream() {
     });
 }
 
-// Init log stream on DOM load
+// Initialize the log stream when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", initLogStream);
