@@ -9,6 +9,7 @@
     --color-hover: #eaeaec;
     --color-accent: #4894e7;
     --color-text: #000;
+    --color-pure: #fff;
     /* Font weights */
     --font-regular: 500;
     --font-semibold: 700;
@@ -27,6 +28,7 @@
         --color-hover: #2f2f2f;
         --color-accent: #4894e7;
         --color-text: #fff;
+        --color-pure: #000;
     }
 } 
 

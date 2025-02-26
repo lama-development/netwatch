@@ -55,6 +55,17 @@ fetch("/sidebar")
                 }
             }
         });
+
+        // --- Tooltip Functionality ---
+        sidebarLinks.forEach(link => {
+            link.addEventListener("mouseenter", function (event) {
+                if (sidebar.classList.contains("collapsed")) {
+                    showTooltip(event, link.querySelector(".sidebar-text").textContent.trim());
+                }
+            });
+
+            link.addEventListener("mouseleave", hideTooltip);
+        });
     });
 
 // Function to convert icon classes from outline (bx) to filled (bxs)
@@ -69,4 +80,22 @@ function convertIconToFilled(icon) {
 
     // Reassign the updated classes back to the element.
     icon.className = classes.join(" ");
+}
+
+// Function to create and position tooltip
+function showTooltip(event, text) {
+    let tooltip = document.createElement("div");
+    tooltip.className = "sidebar-tooltip";
+    tooltip.textContent = text;
+    document.body.appendChild(tooltip);
+
+    const rect = event.target.getBoundingClientRect();
+    tooltip.style.top = `${rect.top + window.scrollY + rect.height / 2}px`;
+    tooltip.style.left = `${rect.right + 10}px`; // Position next to the icon
+    tooltip.style.transform = "translateY(-50%)"; // Center vertically
+}
+
+// Function to remove tooltip
+function hideTooltip() {
+    document.querySelectorAll(".sidebar-tooltip").forEach(el => el.remove());
 }

@@ -115,3 +115,18 @@
 .sidebar:not(.collapsed) .sidebar-expanded {
     display: none;
 }
+
+.sidebar-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    /* background: var(--color-pure);
+    color: var(--color-text); */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1000;
+    transform: translateY(-50%);
+}
