@@ -5,7 +5,8 @@ const lightTheme = {
     '--color-navbar': '#f5f5f5',
     '--color-hover': '#eaeaec',
     '--color-accent': '#4894e7',
-    '--color-text': '#000'
+    '--color-text': '#000',
+    '--color-pure': '#fff'
 };
 
 const darkTheme = {
@@ -13,7 +14,8 @@ const darkTheme = {
     '--color-navbar': '#171717',
     '--color-hover': '#2f2f2f',
     '--color-accent': '#4894e7',
-    '--color-text': '#fff'
+    '--color-text': '#fff',
+    '--color-pure': '#000'
 };
 
 let currentTheme = 'light';

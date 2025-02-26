@@ -25,9 +25,7 @@ body {
 /* Default: When sidebar is expanded */
 main {
     margin-left: calc(var(--sidebar-width-expanded));
-    /* margin-right: 20px; */
     margin-top: calc(var(--navbar-height));
-    /* margin-bottom: 20px; */
 }
 
 /* When sidebar is collapsed */
@@ -39,7 +37,7 @@ main.sidebar-collapsed {
     background-color: #000;
     /* border: 1px solid var(--color-hover); */
     font-family: monospace;
-    font-size: 1rem;
+    font-size: 14px;
     padding: 1rem;
     /* border-radius: 5px; */
     overflow: scroll;

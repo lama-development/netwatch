@@ -11,10 +11,111 @@
 
 body {
     background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
 }
 
+/* Main Container */
 main {
-    margin-top: 60px; /* Navbar height */
-    margin-left: 80px; /* Sidebar width */
+    background-color: var(--color-navbar);
+    border: 1px solid var(--color-hover);
+    margin-top: calc(var(--navbar-height) + 20px);
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
     padding: 30px;
+    border-radius: 8px;
+}
+
+.category {
+    margin-bottom: 40px;
+}
+
+.category>h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-hover);
+}
+
+.setting {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.setting label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.setting input {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-hover);
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group input {
+    flex: 1;
+    margin: 0;
+}
+
+input:focus {
+    outline: none; 
+    border-color: var(--color-accent);
+}
+
+.setting p.description {
+    font-size: 14px;
+    color: var(--color-text);
+    opacity: .8;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+/* Individual Update Button */
+.setting button {
+    background-color: var(--color-accent);
+    color: var(--color-pure);
+    font-weight: var(--font-semibold);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.setting button:hover {
+    opacity: .8;
+}
+
+/* Save All Button */
+main>button {
+    background-color: #28a745;
+    color: var(--color-pure);
+    font-weight: var(--font-semibold);
+    border: none;
+    border-radius: 6px;
+    padding: 12px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+    width: 100%;
+}
+
+main>button:hover {
+    opacity: .8;
 }

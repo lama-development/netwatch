@@ -1,7 +1,7 @@
 {
-    "ping_timeout": 1,
+    "ping_timeout": 3,
     "log_level": "DEBUG",
     "check_interval": 30,
-    "retry_interval": 5,
+    "retry_interval": 3,
     "max_retries": 3
 }

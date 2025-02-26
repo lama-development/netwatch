@@ -1,6 +1,7 @@
 .PHONY: venv api install-reqs update-reqs 
 
 # mingw32-make.exe
+# sudo /home/davide/dev/netwatch/.venv/bin/fastapi dev src/api/main.py --host 0.0.0.0 --port 8000
 
 # Activate Virtual Environment (Not Working)
 venv:
