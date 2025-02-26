@@ -71,15 +71,8 @@ def ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
 
 # Function to start the monitor
 def start_monitor():
-    # Load settings and devices
-    settings = load_settings()
+    # Load devices
     devices = load_devices()
-    # Access individual settings
-    ping_timeout = settings.get("ping_timeout", 1)  # Default to 1 if not found
-    check_interval = settings.get("check_interval", 60)  # Default to 60 seconds
-    retry_interval = settings.get("retry_interval", 5)  # Default to 5 seconds
-    max_retries = settings.get("max_retries", 3)  # Default to 3 retries
-
     if not devices:
         logging.error("No devices found. Exiting...")
         exit()
@@ -88,6 +81,12 @@ def start_monitor():
     device_gen = device_cycle(devices)
     # Main loop
     while not shutdown_event.is_set():  # Stop when event is set
+        settings = load_settings()
+        # Set individual settings
+        ping_timeout = settings.get("ping_timeout", 1)  # Default to 1 if not found
+        check_interval = settings.get("check_interval", 60)  # Default to 60 seconds
+        retry_interval = settings.get("retry_interval", 5)  # Default to 5 seconds
+        max_retries = settings.get("max_retries", 3)  # Default to 3 retries
         ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
         logging.info(f"Cycle completed. Waiting {check_interval} seconds before next cycle...")
         time.sleep(check_interval) 

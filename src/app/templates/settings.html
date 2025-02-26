@@ -1,0 +1,62 @@
+<!-- /src/app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Settings - NetWatch</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/settings.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- JavaScript -->
+    <script src="/static/js/nav.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/settings.js"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div id="navbar-component"></div>
+    <!-- Sidebar -->
+    <div id="sidebar-component"></div>
+    <main>
+        <div class="setting">
+            <label for="ping_timeout">Ping Timeout:</label>
+            <input type="number" id="ping_timeout" name="ping_timeout">
+            <button onclick="updateSetting('ping_timeout')">Aggiorna</button>
+        </div>
+
+        <div class="setting">
+            <label for="log_level">Log Level:</label>
+            <input type="text" id="log_level" name="log_level">
+            <button onclick="updateSetting('log_level')">Aggiorna</button>
+        </div>
+
+        <div class="setting">
+            <label for="check_interval">Check Interval:</label>
+            <input type="number" id="check_interval" name="check_interval">
+            <button onclick="updateSetting('check_interval')">Aggiorna</button>
+        </div>
+
+        <div class="setting">
+            <label for="retry_interval">Retry Interval:</label>
+            <input type="number" id="retry_interval" name="retry_interval">
+            <button onclick="updateSetting('retry_interval')">Aggiorna</button>
+        </div>
+
+        <div class="setting">
+            <label for="max_retries">Max Retries:</label>
+            <input type="number" id="max_retries" name="max_retries">
+            <button onclick="updateSetting('max_retries')">Aggiorna</button>
+        </div>
+
+        <!-- Oppure un pulsante che salva tutte le modifiche insieme -->
+        <button onclick="saveAll()">Salva Tutte le Modifiche</button>
+    </main>
+</body>
+
+</html>

@@ -3,6 +3,7 @@
 import os, sys, json, logging, threading, time, asyncio
 from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +15,7 @@ from app.monitor import start_monitor, stop_monitor, load_settings
 # Paths
 log_path = os.path.join("logs", "netwatch.log")
 templates_path = os.path.join("src", "app", "templates")
+settings_path = os.path.join("src", "config", "settings.json")
 templates = Jinja2Templates(directory=templates_path)
 
 # Global event to signal when to stop reading logs
@@ -105,7 +107,7 @@ async def get_sidebar(request: Request):
     return templates.TemplateResponse("sidebar.html", {"request": request})
 
 @app.get("/")
-def read_root(request: Request):
+def get_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/devices")
@@ -114,10 +116,32 @@ def get_devices():
     return {"devices": devices}
 
 @app.get("/logs")
-async def get_logs_page(request: Request):
-    # Render the dedicated HTML page
+async def get_logs(request: Request):
     return templates.TemplateResponse("logs.html", {"request": request})
 
 @app.get("/stream")
-async def stream_logs():
+async def get_stream():
     return StreamingResponse(tail_log(log_path), media_type="text/event-stream")
+
+class Settings(BaseModel):
+    ping_timeout: int
+    log_level: str
+    check_interval: int
+    retry_interval: int
+    max_retries: int
+
+@app.get("/settings")
+async def get_settings(request: Request):
+    return templates.TemplateResponse("settings.html", {"request": request})
+
+@app.get("/api/settings")
+async def get_api_settings():
+    with open(settings_path, "r") as f:
+        settings = json.load(f)
+    return settings
+
+@app.post("/api/settings")
+async def update_api_settings(settings: Settings):
+    with open(settings_path, "w") as f:
+        json.dump(settings.dict(), f, indent=4)
+    return {"message": "Impostazioni aggiornate con successo"}

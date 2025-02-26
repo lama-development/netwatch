@@ -18,7 +18,7 @@
 
 .sidebar.collapsed {
     padding: 80px 0;
-    width: 80px;
+    width: 60px;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -97,7 +97,7 @@
 }
 
 .sidebar.collapsed .bottom-content {
-    width: 80px;
+    width: 60px;
 }
 
 .sidebar.collapsed .bottom span {
