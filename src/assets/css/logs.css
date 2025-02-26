@@ -20,7 +20,6 @@
 
 body {
     background-color: var(--color-bg);
-    margin: 6rem 14rem;
 }
 
 #log {

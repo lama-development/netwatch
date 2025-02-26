@@ -12,3 +12,9 @@
 body {
     background-color: var(--color-bg);
 }
+
+main {
+    margin-top: 60px; /* Navbar height */
+    margin-left: 80px; /* Sidebar width */
+    padding: 30px;
+}
