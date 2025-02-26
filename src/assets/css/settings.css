@@ -101,7 +101,6 @@ input:focus {
     opacity: .8;
 }
 
-/* Save All Button */
 main>button {
     background-color: #28a745;
     color: var(--color-pure);
@@ -118,4 +117,14 @@ main>button {
 
 main>button:hover {
     opacity: .8;
+}
+
+@media screen and (max-width: 480px) {
+    main {
+        margin-top: var(--navbar-height);
+        margin-left: var(--sidebar-width-collapsed);
+        border-radius: 0;
+        border: none;
+        background-color: var(--color-bg);
+    }
 }

@@ -55,19 +55,19 @@ def ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
             response = ping(ip, timeout=ping_timeout)
             # If ping is successful, log the device as online and break
             if response:
-                status = "online"
+                status = "online 🟢"
                 log_status(name, ip, status)
                 break
             # If ping fails, increase retry count and try again after a short delay
             else:
-                status = f"offline, retrying ({retries + 1})"
+                status = f"offline, retrying ({retries + 1}) 🟡"
                 log_status(name, ip, status) 
                 retries += 1
                 if retries < max_retries:
                     time.sleep(retry_interval)
         # If max retries reached and still offline, log the final status as offline
         if retries == max_retries and status.startswith("offline"):
-            log_status(name, ip, "offline (max retries reached)")
+            log_status(name, ip, "offline 🔴")
 
 # Function to start the monitor
 def start_monitor():
