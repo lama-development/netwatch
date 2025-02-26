@@ -15,6 +15,5 @@ body {
 
 main {
     margin-top: 60px; /* Navbar height */
-    margin-left: 80px; /* Sidebar width */
-    padding: 30px;
+    margin-left: 60px; /* Sidebar width */
 }

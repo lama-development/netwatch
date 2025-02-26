@@ -13,6 +13,10 @@
     --font-regular: 500;
     --font-semibold: 700;
     --font-bold: 900;
+    /* Variables */
+    --navbar-height: 60px;
+    --sidebar-width-expanded: 250px;
+    --sidebar-width-collapsed: 60px;
 }
 
 @media (prefers-color-scheme: dark) {
