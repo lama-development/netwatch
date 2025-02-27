@@ -10,6 +10,7 @@
     --color-accent: #4894e7;
     --color-text: #000;
     --color-pure: #fff;
+    --color-overlay: rgba(0, 0, 0, 0.5);
     /* Font weights */
     --font-regular: 500;
     --font-semibold: 700;

@@ -15,16 +15,21 @@ body {
     line-height: 1.6;
 }
 
-/* Main Container */
+
 main {
     background-color: var(--color-navbar);
     border: 1px solid var(--color-hover);
-    margin-top: calc(var(--navbar-height) + 20px);
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 800px;
+    margin-top: calc(var(--navbar-height) + 40px);
+    margin-right: 40px;
+    margin-bottom: 40px;
+    margin-left: calc(var(--sidebar-width-expanded) + 40px);
     padding: 30px;
     border-radius: 8px;
+}
+
+main.sidebar-collapsed {
+    margin-left: calc(var(--sidebar-width-collapsed) + 40px);
+    margin-right: 40px;
 }
 
 .category {
@@ -35,7 +40,7 @@ main {
     font-size: 22px;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 2px solid var(--color-hover);
+    border-bottom: 1px solid var(--color-hover);
 }
 
 .setting {
@@ -49,15 +54,23 @@ main {
     margin-bottom: 8px;
 }
 
-.setting input {
+.setting input,
+.setting select {
     background-color: var(--color-bg);
     color: var(--color-text);
     border: 1px solid var(--color-hover);
+    height: 42px;
     width: 100%;
     padding: 10px;
     border-radius: 5px;
     font-size: 16px;
     margin-bottom: 5px;
+}
+
+.setting input:focus,
+.setting select:focus {
+    outline: none; 
+    border-color: var(--color-accent);
 }
 
 .input-group {
@@ -66,21 +79,17 @@ main {
     gap: 10px;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
     flex: 1;
     margin: 0;
-}
-
-input:focus {
-    outline: none; 
-    border-color: var(--color-accent);
 }
 
 .setting p.description {
     font-size: 14px;
     color: var(--color-text);
     opacity: .8;
-    margin-top: 5px;
+    margin-top: 8px;
     margin-bottom: 10px;
 }
 
@@ -91,7 +100,7 @@ input:focus {
     font-weight: var(--font-semibold);
     border: none;
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -112,19 +121,37 @@ main>button {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-top: 20px;
-    width: 100%;
+    width: fit-content;
 }
 
 main>button:hover {
     opacity: .8;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 768px) {
     main {
-        margin-top: var(--navbar-height);
-        margin-left: var(--sidebar-width-collapsed);
-        border-radius: 0;
-        border: none;
         background-color: var(--color-bg);
+        border: none;
+        border-radius: 0;
+        /* margin: var(--navbar-height) 0 0 var(--sidebar-width-collapsed); */
+        margin-top: calc(var(--navbar-height));
+        margin-right: 0;
+        margin-bottom: 0;
+        margin-left: calc(var(--sidebar-width-collapsed));
+        transition: filter 0.3s ease;
+    }
+
+    main.sidebar-collapsed {
+        margin-left: calc(var(--sidebar-width-collapsed));
+    }
+
+    .mobile-overlay {
+        background: var(--color-overlay);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 8;
     }
 }

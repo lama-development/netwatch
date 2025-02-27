@@ -1,6 +1,6 @@
 {
     "ping_timeout": 3,
-    "log_level": "DEBUG",
+    "log_level": "INFO",
     "check_interval": 30,
     "retry_interval": 1,
     "max_retries": 3

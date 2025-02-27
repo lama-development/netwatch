@@ -11,29 +11,60 @@ fetch("/sidebar")
         const sidebarExpanded = document.querySelector(".sidebar-expanded");
         const mainContent = document.querySelector("main");
 
-        // Check sidebar state in local storage
-        const sidebarState = localStorage.getItem('sidebarState') || 'expanded';
-
-        // ISet sidebar state based on the saved state
-        if (sidebarState === 'collapsed') {
-            sidebar.classList.add("collapsed");
+        // Forza la sidebar a partire in stato collapsed su ogni nuova pagina
+        sidebar.classList.add("collapsed");
+        if (window.innerWidth > 768) {
             mainContent.classList.add("sidebar-collapsed");
         } else {
-            sidebar.classList.remove("collapsed");
-            mainContent.classList.remove("sidebar-collapsed");
+            // Se esiste già l'overlay, lo rimuovo (opzionale)
+            removeMobileOverlay();
+        }
+        localStorage.setItem('sidebarState', 'collapsed');
+
+        // Function to create the overlay element for mobile
+        function createMobileOverlay() {
+            const overlay = document.createElement("div");
+            overlay.className = "mobile-overlay";
+            overlay.addEventListener("click", closeSidebarOnMobile);
+            document.body.appendChild(overlay);
+        }
+
+        // Function to remove the overlay element if it exists
+        function removeMobileOverlay() {
+            const overlay = document.querySelector(".mobile-overlay");
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        // Function to close the sidebar on mobile
+        function closeSidebarOnMobile() {
+            sidebar.classList.add("collapsed");
+            removeMobileOverlay();
+            localStorage.setItem('sidebarState', 'collapsed');
         }
 
         // Collapse sidebar on button click
         sidebarCollapsed.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
-            mainContent.classList.add("sidebar-collapsed");
+            if (window.innerWidth > 768) {
+                mainContent.classList.add("sidebar-collapsed");
+            } else {
+                removeMobileOverlay();
+            }
             localStorage.setItem('sidebarState', 'collapsed');
         });
+
         // Expand sidebar on button click
         sidebarExpanded.addEventListener("click", () => {
             sidebar.classList.remove("collapsed");
-            mainContent.classList.remove("sidebar-collapsed");
-            localStorage.setItem('sidebarState', 'expanded')
+            if (window.innerWidth > 768) {
+                mainContent.classList.remove("sidebar-collapsed");
+            } else {
+                // On mobile, create the overlay to darken main content and capture click
+                createMobileOverlay();
+            }
+            localStorage.setItem('sidebarState', 'expanded');
         });
 
         // --- Active Link and Icon Modification ---
@@ -43,12 +74,8 @@ fetch("/sidebar")
         sidebarLinks.forEach(link => {
             const linkPath = link.getAttribute("href");
 
-            // Check if the current URL matches the link's href.
             if (linkPath === currentPath || (linkPath !== "/" && currentPath.startsWith(linkPath))) {
-                // Mark the link as active.
                 link.classList.add("active");
-
-                // Update the icon to the filled version by converting the second "bx" class.
                 const icon = link.querySelector("i");
                 if (icon) {
                     convertIconToFilled(icon);
@@ -63,22 +90,16 @@ fetch("/sidebar")
                     showTooltip(event, link.querySelector(".sidebar-text").textContent.trim());
                 }
             });
-
             link.addEventListener("mouseleave", hideTooltip);
         });
     });
 
 // Function to convert icon classes from outline (bx) to filled (bxs)
 function convertIconToFilled(icon) {
-    // Split the class string into an array of classes.
     const classes = icon.className.split(" ");
-
-    // Ensure there is at least a second class and that it starts with "bx-"
     if (classes.length > 1 && classes[1].startsWith("bx-")) {
         classes[1] = classes[1].replace("bx-", "bxs-");
     }
-
-    // Reassign the updated classes back to the element.
     icon.className = classes.join(" ");
 }
 
@@ -91,8 +112,8 @@ function showTooltip(event, text) {
 
     const rect = event.target.getBoundingClientRect();
     tooltip.style.top = `${rect.top + window.scrollY + rect.height / 2}px`;
-    tooltip.style.left = `${rect.right + 10}px`; // Position next to the icon
-    tooltip.style.transform = "translateY(-50%)"; // Center vertically
+    tooltip.style.left = `${rect.right + 10}px`;
+    tooltip.style.transform = "translateY(-50%)";
 }
 
 // Function to remove tooltip
