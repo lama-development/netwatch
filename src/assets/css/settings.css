@@ -130,6 +130,7 @@ main>button:hover {
 
 .popup {
     background-color: #28a745;
+    border: 1px solid #208437;
     color: var(--color-pure);
     font-weight: var(--font-semibold);
     position: fixed;

@@ -2,6 +2,8 @@
 
 import os, time, json, logging, itertools, threading
 from ping3 import ping
+from app.db.database import SessionLocal
+from app.db.models import Device
 
 shutdown_event = threading.Event()  # Create a global shutdown event
 
@@ -20,18 +22,30 @@ def load_settings():
         return {}
 
 # Function to load devices from config/devices.json
+# def load_devices():
+#     devices_path = os.path.join("src", "config", "devices.json")
+#     try:
+#         with open(devices_path, "r") as file:
+#             data = json.load(file)
+#             return data["devices"]
+#     except FileNotFoundError:
+#         logging.error("File 'devices.json' not found in config folder.")
+#         return []
+#     except json.JSONDecodeError:
+#         logging.error("Could not read 'devices.json' file.")
+#         return []
+
 def load_devices():
-    devices_path = os.path.join("src", "config", "devices.json")
+    db = SessionLocal()
     try:
-        with open(devices_path, "r") as file:
-            data = json.load(file)
-            return data["devices"]
-    except FileNotFoundError:
-        logging.error("File 'devices.json' not found in config folder.")
+        devices = db.query(Device).all()
+        # Convert to a list of dictionaries for backward compatibility with your monitor logic
+        return [{"name": device.name, "ip": device.ip_address} for device in devices]
+    except Exception as e:
+        logging.error("Error loading devices from database: " + str(e))
         return []
-    except json.JSONDecodeError:
-        logging.error("Could not read 'devices.json' file.")
-        return []
+    finally:
+        db.close()
 
 # Function to create a device cycle generator
 def device_cycle(devices):
