@@ -13,6 +13,26 @@ async function loadSettings() {
     }
 }
 
+function showPopup(message) {
+    let popup = document.getElementById("popup");
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "popup";
+        popup.className = "popup";
+        document.body.appendChild(popup);
+    }
+    popup.innerHTML = '<i class="bx bx-check-circle"></i> ' + message;
+    popup.classList.add("show");
+
+    const audio = document.getElementById("success-sound");
+    if (audio) {
+        audio.play();
+    }
+
+    setTimeout(() => {
+        popup.classList.remove("show");
+    }, 3000);
+}
 
 // Funzione per aggiornare un singolo parametro
 async function updateSetting(param) {
@@ -36,10 +56,13 @@ async function updateSetting(param) {
         });
         const result = await updateResp.json();
         console.log(result);
+
+        // Mostra il popup di successo
+        showPopup("Settings updated successfully");
     } catch (error) {
         console.error("Errore nell'aggiornamento della setting:", error);
     }
-}   
+}
 
 // Funzione per salvare tutte le modifiche contemporaneamente
 async function saveAll() {
@@ -59,6 +82,9 @@ async function saveAll() {
         });
         const result = await response.json();
         console.log(result);
+
+        // Mostra il popup di successo
+        showPopup("Settings updated successfully");
     } catch (error) {
         console.error("Errore nel salvataggio delle impostazioni:", error);
     }
