@@ -8,13 +8,48 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-
-# Add the src directory to sys.path explicitly
-sys.path.append(os.getenv("PYTHONPATH", "src")) 
+from typing import Optional, List
+sys.path.append(os.getenv("PYTHONPATH", "src")) # Add the src directory to sys.path explicitly
 from app.monitor import start_monitor, stop_monitor, load_settings
 from app.db.database import SessionLocal, engine, Base
 from app.db import models, crud
 
+# Paths
+log_path = os.path.join("logs", "netwatch.log")
+templates_path = os.path.join("src", "app", "templates")
+settings_path = os.path.join("src", "config", "settings.json")
+templates = Jinja2Templates(directory=templates_path)
+
+# Create tables if they don't exist
+Base.metadata.create_all(bind=engine)
+
+# Global event to signal when to stop reading logs
+shutdown_event = threading.Event()
+
+# Create an async context manager for lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    setup_logger()
+    # Startup logic
+    thread = threading.Thread(target=start_monitor, daemon=True)
+    thread.start()
+    logging.info("NetWatch started in the background.")
+    yield  # FastAPI keeps running until shutdown
+    # Shutdown logic
+    logging.info("NetWatch is shutting down...")
+    stop_monitor()
+    shutdown_event.set()  # Signal to stop reading logs
+    thread.join(timeout=3)  # Wait for it to exit cleanly (timeout just in case)
+    logging.info("NetWatch has been terminated.")
+
+# Create the FastAPI app and use the lifespan event
+app = FastAPI(lifespan=lifespan)
+
+# Serve static files from the 'assets' directory
+app.mount("/static", StaticFiles(directory="src/assets"), name="static")
+
+''' ----- Pydantic Models ----- '''	
 class Settings(BaseModel):
     ping_timeout: int
     log_level: str
@@ -24,18 +59,22 @@ class Settings(BaseModel):
 
 class DeviceCreate(BaseModel):
     name: str
-    ip_address: str
-    category: str
-    os: str
+    ip: str
+    type: str
+    mac_address: Optional[str] = None
+    owner: Optional[str] = None
+    custom_alerts: Optional[List[str]] = []
+    subnet: Optional[str] = None
+    gateway: Optional[str] = None
+    dns: Optional[str] = None
 
-# Paths
-log_path = os.path.join("logs", "netwatch.log")
-templates_path = os.path.join("src", "app", "templates")
-settings_path = os.path.join("src", "config", "settings.json")
-templates = Jinja2Templates(directory=templates_path)
-
-# Global event to signal when to stop reading logs
-shutdown_event = threading.Event()
+''' ----- Helper Functions ----- '''
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def setup_logger():
     # Load settings from JSON file
@@ -58,20 +97,29 @@ def setup_logger():
     )
     logging.info("NetWatch logger initiated.")
 
-# Load devices from JSON
-def read_devices():
-    try:
-        with open("src/config/devices.json", "r") as file:
-            data = json.load(file)
-            return data["devices"]
-    except FileNotFoundError:
-        return []
+def serialize_device(device):
+    return {
+        "id": device.id,
+        "name": device.name,
+        "ip": device.ip,
+        "type": device.type,
+        "status": device.status,
+        "mac_address": device.mac_address,
+        "owner": device.owner,
+        "packet_loss": device.packet_loss,
+        "jitter": device.jitter,
+        "uptime": device.uptime,
+        "custom_alerts": device.custom_alerts,
+        "subnet": device.subnet,
+        "gateway": device.gateway,
+        "dns": device.dns
+    }
 
 # Asynchronous generator to stream logs and show the full log on first access
 async def tail_log(file_path: str):
     # Open the log file
     with open(file_path, "r", encoding="utf-8") as f:
-        # Step 1: Yield the entire log file initially
+        # Yield the entire log file initially
         f.seek(0)
         # Read all the content of the log file up to the current point
         while True:
@@ -81,8 +129,7 @@ async def tail_log(file_path: str):
             else:
                 # Once we've printed the entire file, switch to tailing the file
                 break
-
-        # Step 2: Start streaming new lines after we've printed the full file
+        # Start streaming new lines after we've printed the full file
         f.seek(0, os.SEEK_END)  # Start tailing from the end of the file
         while True:
             line = f.readline()
@@ -90,38 +137,6 @@ async def tail_log(file_path: str):
                 yield f"data: {line.rstrip()}\n\n"
             else:
                 await asyncio.sleep(0.1)  # Wait for new lines
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-# Create an async context manager for lifespan
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    setup_logger()
-    # Startup logic
-    thread = threading.Thread(target=start_monitor, daemon=True)
-    thread.start()
-    logging.info("NetWatch started in the background.")
-    yield  # FastAPI keeps running until shutdown
-    
-    # Shutdown logic
-    logging.info("NetWatch is shutting down...")
-    stop_monitor()
-    shutdown_event.set()  # Signal to stop reading logs
-    thread.join(timeout=3)  # Wait for it to exit cleanly (timeout just in case)
-    logging.info("NetWatch has been terminated.")
-
-# Create the FastAPI app and use the lifespan event
-app = FastAPI(lifespan=lifespan)
-
-# Serve static files from the 'assets' directory
-app.mount("/static", StaticFiles(directory="src/assets"), name="static")
 
 ''' ----- Components ----- '''
 @app.get("/navbar")
@@ -169,24 +184,34 @@ async def update_api_settings(settings: Settings):
 @app.get("/api/devices")
 def get_devices(db: Session = Depends(get_db)):
     devices = crud.get_devices(db)
-    return {"devices": devices}
+    serialized = [serialize_device(device) for device in devices]
+    return {"devices": serialized}
 
 @app.post("/api/devices")
-def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
-    return crud.create_device(db, device.name, device.ip_address, device.category, device.os)
-
-@app.delete("/api/devices/{device_id}")
-def delete_device(device_id: int, db: Session = Depends(get_db)):
-    device = crud.get_device(db, device_id)
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    crud.delete_device(db, device)
-    return {"message": "Device removed successfully"}
+def add_device(device: DeviceCreate, db: Session = Depends(get_db)):
+    device_data = device.dict()
+    # Convert custom_alerts array to a comma-separated string
+    device_data["custom_alerts"] = ",".join(device_data.get("custom_alerts", [])) if device_data.get("custom_alerts") else ""
+    # Hidden fields are auto set or calculated later by monitoring
+    device_data["status"] = "Unknown"
+    device_data["packet_loss"] = 0.0
+    device_data["jitter"] = 0.0
+    device_data["uptime"] = 0.0
+    new_device = crud.create_device(db, device_data)
+    return new_device
 
 @app.put("/api/devices/{device_id}")
-def update_device(device_id: int, device: DeviceCreate, db: Session = Depends(get_db)):
-    db_device = crud.get_device(db, device_id)
-    if not db_device:
+def edit_device(device_id: int, device: DeviceCreate, db: Session = Depends(get_db)):
+    device_data = device.dict()
+    device_data["custom_alerts"] = ",".join(device_data.get("custom_alerts", [])) if device_data.get("custom_alerts") else ""
+    updated = crud.update_device(db, device_id, device_data)
+    if updated is None:
         raise HTTPException(status_code=404, detail="Device not found")
-    updated_device = crud.update_device(db, device_id, device)
-    return updated_device
+    return updated
+
+@app.delete("/api/devices/{device_id}")
+def remove_device(device_id: int, db: Session = Depends(get_db)):
+    success = crud.delete_device(db, device_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return {"message": "Device deleted successfully"}

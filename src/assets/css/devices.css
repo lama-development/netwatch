@@ -113,6 +113,12 @@ form label {
     font-weight: bold;
 }
 
+.optional {
+    font-weight: normal;
+    font-size: 0.9em;
+    color: #777;
+}
+
 form input,
 form select {
     background-color: var(--color-bg);
@@ -127,6 +133,18 @@ form input:focus,
 form select:focus {
     outline: none;
     border-color: var(--color-accent);
+}
+
+/* Fieldset Styles for Custom Alerts */
+fieldset {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+legend {
+    font-weight: bold;
 }
 
 form button {
@@ -144,6 +162,15 @@ form button {
 form button:hover {
     background-color: #218838;
 }
+
+#advanced-section.hidden {
+    display: none;
+}
+
+#toggle-advanced {
+    margin-bottom: 15px;
+}
+
 
 @media screen and (max-width: 768px) {
     main {
