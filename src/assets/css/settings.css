@@ -152,15 +152,15 @@ main>button:hover {
         background-color: var(--color-bg);
         border: none;
         border-radius: 0;
-        margin-top: calc(var(--navbar-height));
+        margin-top: var(--navbar-height);
         margin-right: 0;
         margin-bottom: 0;
-        margin-left: calc(var(--sidebar-width-collapsed));
+        margin-left: var(--sidebar-width-collapsed);
         transition: filter 0.3s ease;
     }
 
     main.sidebar-collapsed {
-        margin-left: calc(var(--sidebar-width-collapsed));
+        margin-left: var(--sidebar-width-collapsed);
     }
 
     .mobile-overlay {

@@ -67,12 +67,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const categoryIcons = {
             "Computer": "bx-desktop",
             "Printer": "bx-printer",
-            "Router": "bx-router",
+            "Router": "bx-network-chart",
             "Switch": "bx-transfer",
             "Server": "bx-server",
             "Firewall": "bx-shield",
             "Access Point": "bx-wifi",
-            "Other": "bx-question-mark"
+            "Other": "bx-devices"
         };
         const defaultIcon = "bx-device";
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="category-count">${count}</div>
                 </div>
                 <button class="add-device" data-category="${category}" title="Add ${category}">
-                    <i class="bx bx-plus"></i>
+                    <i class="bx bx-plus-circle"></i>
                 </button>
             `;
             categoriesContainer.appendChild(card);
@@ -147,8 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     customAlertsDisplay = device.custom_alerts.split(",").join(", ");
                 }
             }
-            // For MAC Address, if missing, show a slash 
-            let macDisplay = device.mac_address ? device.mac_address : `<span style="color: var(--color-text-secondary);">/</span>`;
             // Similarly for owner or custom alerts if desired:
             const ownerDisplay = device.owner ? device.owner : `<span style="color: var(--color-text-secondary);">/</span>`;
             const alertsDisplay = customAlertsDisplay ? customAlertsDisplay : `<span style="color: var(--color-text-secondary);">/</span>`;
