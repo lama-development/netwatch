@@ -24,6 +24,47 @@
     <!-- Sidebar -->
     <div id="sidebar-component"></div>
     <main>
+        <header>
+            <h1>NetWatch Dashboard</h1>
+        </header>
+        <!-- Device Status Section -->
+        <section id="device-status">
+            <h2>Device Status</h2>
+            <div class="cards">
+                <!-- Online Card -->
+                <div class="card" id="card-online">
+                    <div class="card-icon online-icon">
+                        <i class='bx bx-check-circle'></i>
+                    </div>
+                    <div class="card-info">
+                        <h3>Online</h3>
+                        <p id="count-online">0</p>
+                    </div>
+                </div>
+                <!-- Offline Card -->
+                <div class="card" id="card-offline">
+                    <div class="card-icon offline-icon">
+                        <i class='bx bx-x-circle'></i>
+                    </div>
+                    <div class="card-info">
+                        <h3>Offline</h3>
+                        <p id="count-offline">0</p>
+                    </div>
+                </div>
+                <!-- Unknown Card -->
+                <div class="card" id="card-unknown">
+                    <div class="card-icon unknown-icon">
+                        <i class='bx bx-question-mark'></i>
+                    </div>
+                    <div class="card-info">
+                        <h3>Unknown</h3>
+                        <p id="count-unknown">0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
-</body> 
+    <script src="/static/js/dashboard.js"></script>
+</body>
+
 </html>

@@ -160,10 +160,6 @@ def devices_page(request: Request):
 async def get_logs(request: Request):
     return templates.TemplateResponse("logs.html", {"request": request})
 
-@app.get("/stream")
-async def get_stream():
-    return StreamingResponse(tail_log(log_path), media_type="text/event-stream")
-
 @app.get("/settings")
 async def get_settings(request: Request):
     return templates.TemplateResponse("settings.html", {"request": request})
@@ -215,3 +211,27 @@ def remove_device(device_id: int, db: Session = Depends(get_db)):
     if not success:
         raise HTTPException(status_code=404, detail="Device not found")
     return {"message": "Device deleted successfully"}
+
+@app.get("/stream")
+async def get_stream():
+    return StreamingResponse(tail_log(log_path), media_type="text/event-stream")
+
+@app.get("/stream/device_status")
+async def stream_device_status():
+    async def event_generator():
+        while True:
+            db = SessionLocal()
+            try:
+                devices = crud.get_devices(db)
+                online = sum(1 for d in devices if d.status and "online" in d.status.lower())
+                offline = sum(1 for d in devices if d.status and "offline" in d.status.lower())
+                total = len(devices)
+                unknown = total - online - offline
+                data = {"online": online, "offline": offline, "unknown": unknown}
+                yield f"data: {json.dumps(data)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            finally:
+                db.close()
+            await asyncio.sleep(5)  # Update every 5 seconds
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
