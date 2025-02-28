@@ -16,7 +16,7 @@ body {
 main {
     margin-top: calc(var(--navbar-height) + 40px);
     margin-left: calc(var(--sidebar-width-collapsed) + 40px);
-    max-width: 800px;
+    max-width: fit-content;
 }
 
 header {
@@ -33,10 +33,118 @@ h2 {
     color: var(--color-text);
 }
 
+/* Devices Summary Widget Container */
+.devices-summary-widget {
+    margin: 20px;
+    padding: 20px;
+    background-color: var(--color-navbar);
+    border-radius: 8px;
+}
+
+/* Total Devices Summary */
+.total-devices {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.total-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--color-accent);
+}
+
+.total-text {
+    font-size: 1em;
+    color: var(--color-text);
+}
+
+/* Category Cards Container */
+.categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+/* Individual Category Card */
+.category-card {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-hover);
+    border-radius: 8px;
+    width: 150px;
+    padding: 15px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Category Icon */
+.category-icon {
+    font-size: 2.5em;
+    color: var(--color-accent);
+    margin-bottom: 10px;
+}
+
+/* Category Info (Name & Count) */
+.category-info {
+    margin-bottom: 10px;
+}
+
+.category-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.category-count {
+    font-size: 1.5em;
+    color: var(--color-text);
+}
+
+/* Add Device Button */
+.add-device {
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    cursor: pointer;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 1.2em;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.add-device:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .category-card {
+        width: 100px;
+        padding: 10px;
+    }
+
+    .category-icon {
+        font-size: 2em;
+    }
+
+    .category-count {
+        font-size: 1.2em;
+    }
+}
+
+
 table {
     background: var(--color-navbar);
     color: var(--color-text);
-    width: 100%;
+    width: 800px;
     border-collapse: collapse;
     margin-bottom: 20px;
     border-radius: 5px;
@@ -59,14 +167,13 @@ table tr:nth-child(even) {
     background-color: var(--color-navbar);
 }
 
-/* Action Buttons */
-.edit-button,
-.delete-button {
+.action-buttons {
     display: flex;
-    gap: 30px;
+    align-items: center;
+    gap: 10px;
 }
 
-#devices-table-body button {
+.action-buttons button {
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
@@ -94,6 +201,62 @@ table tr:nth-child(even) {
 .delete-button:hover {
     background-color: #c82333;
 }
+
+/* Pagination Buttons */
+#pagination {
+    margin-top: 20px;
+    text-align: center;
+    color: var(--color-text);
+}
+
+#pagination button {
+    background-color: var(--color-accent);
+    color: var(--color-pure);
+    border: none;
+    padding: 8px 12px;
+    margin: 0 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+#pagination button:hover {
+    background-color: #007bff;
+    /* or any darker accent */
+}
+
+#pagination button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Table Header Sorting Icons */
+thead th[data-sort] {
+    cursor: pointer;
+    user-select: none;
+}
+
+thead th[data-sort]:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Adjust the spacing between header text and icon */
+thead th[data-sort] i {
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* Alternate Row Colors */
+table tbody tr:nth-child(odd) {
+    background-color: var(--color-bg);
+}
+
+table tbody tr:nth-child(even) {
+    background-color: var(--color-navbar);
+    /* or another color of your choice */
+}
+
 
 /* Form styling */
 form {
@@ -186,6 +349,6 @@ form button:hover {
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 8; 
+        z-index: 8;
     }
 }

@@ -25,17 +25,34 @@
         <header>
             <h1>Devices</h1>
         </header>
+
+        <section>
+            <div class="devices-summary-widget">
+                <!-- Total Devices Summary -->
+                <div class="total-devices">
+                    <div id="total-number" class="total-number">0</div>
+                    <div class="total-text">Total Devices</div>
+                </div>
+
+                <!-- Categories Container (will be populated dynamically) -->
+                <div id="categories-container" class="categories">
+                    <!-- Category cards will be injected here -->
+                </div>
+            </div>
+
+        </section>
+
         <!-- Section to display current devices -->
         <section id="device-list">
             <h2>Current Devices</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>IP</th>
-                        <th>Type</th>
-                        <th>Owner</th>
-                        <th>Alerts</th>
+                        <th data-sort="name">Name <i class="bx bx-sort"></i></th>
+                        <th data-sort="ip">Address<i class="bx bx-sort"></i></th>
+                        <th data-sort="type">Type <i class="bx bx-sort"></i></th>
+                        <th data-sort="owner">Owner <i class="bx bx-sort"></i></th>
+                        <th data-sort="custom_alerts">Custom Alerts <i class="bx bx-sort"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -43,6 +60,7 @@
                     <!-- Device rows will be inserted here via JavaScript -->
                 </tbody>
             </table>
+            <div id="pagination"></div>
         </section>
 
         <!-- Section to add a new device -->
@@ -55,7 +73,7 @@
                     <input type="text" id="name" name="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="ip">IP Address</label>
+                    <label for="ip">Address</label>
                     <input type="text" id="ip" name="ip" required>
                 </div>
                 <div class="form-group">
@@ -87,7 +105,7 @@
                     <label><input type="checkbox" name="custom_alerts" value="Packet Loss"> Packet Loss</label>
                     <label><input type="checkbox" name="custom_alerts" value="Port Closed"> Port Closed</label>
                 </fieldset>
-                
+
                 <!-- Advanced Section Toggle -->
                 <button type="button" id="toggle-advanced">Show Advanced</button>
                 <div id="advanced-section" class="hidden">

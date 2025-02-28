@@ -64,7 +64,7 @@ def setup_logger() -> None:
         encoding="utf-8",
         handlers=[
             logging.FileHandler(LOG_FILE),
-            logging.StreamHandler()
+            #   logging.StreamHandler()
         ]
     )
     logging.info("Logger initialized with level %s", log_level)
