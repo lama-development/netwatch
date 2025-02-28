@@ -1,20 +1,5 @@
-# Ignore virtual environments
 .venv/
-
-# Ignore node_modules
-node_modules/
-
-# Ignore build files
-dist/
-
-# Ignore log files
 logs/
-
-# Ignore python cache files
+node_modules/
 __pycache__/
-
-# Ignore editor-specific files
 .vscode/
-
-# Ignore environment files
-.env
