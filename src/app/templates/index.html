@@ -27,11 +27,9 @@
         <header>
             <h1>NetWatch Dashboard</h1>
         </header>
-        <!-- Device Status Section -->
         <section id="device-status">
             <h2>Device Status</h2>
             <div class="cards">
-                <!-- Online Card -->
                 <div class="card" id="card-online">
                     <div class="card-icon online-icon">
                         <i class='bx bx-check-circle'></i>
@@ -41,7 +39,6 @@
                         <p id="count-online">0</p>
                     </div>
                 </div>
-                <!-- Offline Card -->
                 <div class="card" id="card-offline">
                     <div class="card-icon offline-icon">
                         <i class='bx bx-x-circle'></i>
@@ -51,7 +48,6 @@
                         <p id="count-offline">0</p>
                     </div>
                 </div>
-                <!-- Unknown Card -->
                 <div class="card" id="card-unknown">
                     <div class="card-icon unknown-icon">
                         <i class='bx bx-question-mark'></i>
@@ -63,6 +59,29 @@
                 </div>
             </div>
         </section>
+
+        <!-- <div class="card">
+            <h2 class="card-title">Device Status</h2>
+            <div class="card-content">
+                <div class="online-card">
+                    <div class="online-header">
+                        <span class="online-icon">📶</span>
+                        <span class="online-text">Online Devices</span>
+                    </div>
+                    <div class="online-count"><p id="count-online">0</p></div>
+                </div>
+                <div class="side-cards">
+                    <div class="side-card offline-card">
+                        <div class="side-card-label">Offline</div>
+                        <div class="side-card-count"><p id="count-offline">0</p></div>
+                    </div>
+                    <div class="side-card unknown-card">
+                        <div class="side-card-label">Unknown</div>
+                        <div class="side-card-count"><p id="count-unknown">0</p></div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
     </main>
     <script src="/static/js/dashboard.js"></script>
 </body>
