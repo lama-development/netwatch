@@ -70,19 +70,19 @@ def ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
             response = ping(ip, timeout=ping_timeout)
             # If ping is successful, log the device as online and break
             if response:
-                status = "online 🟢"
+                status = "online"
                 log_status(name, ip, status)
                 update_device_status(ip, status)
                 break  # Exit the retry loop if ping is successful
             else:
-                status = f"offline, retrying ({retries + 1}) 🟡"
+                status = f"offline, retrying ({retries + 1})"
                 log_status(name, ip, status)
                 retries += 1
                 if retries < max_retries:
                     time.sleep(retry_interval)
         # If max retries reached and still offline, log the final status as offline
         if retries == max_retries and status.startswith("offline"):
-            final_status = "offline 🔴"
+            final_status = "offline"
             log_status(name, ip, final_status)
             update_device_status(ip, final_status)
 
@@ -90,20 +90,19 @@ def ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
 def start_monitor():
     logging.info("Starting device monitoring cycle...")
     while not shutdown_event.is_set():
-        # Reload devices each cycle so new ones are included
+        # Reload devices and settings each cycle so new ones are included
         devices = load_devices()
+        settings = load_settings()
         if not devices:
             logging.error("No devices found in this cycle.")
         else:
             # Create a new device generator with the updated list.
             device_gen = device_cycle(devices)
-            settings = load_settings()
             ping_timeout = settings.get("ping_timeout", 1)
-            check_interval = settings.get("check_interval", 60)
             retry_interval = settings.get("retry_interval", 5)
             max_retries = settings.get("max_retries", 3)
             ping_devices(devices, device_gen, ping_timeout, retry_interval, max_retries)
-        logging.info(f"Cycle completed. Waiting {settings.get('check_interval', 60)} seconds before next cycle...")
+        logging.info(f"Cycle completed. Waiting {settings.get("check_interval", 60)} seconds before next cycle...")
         time.sleep(settings.get("check_interval", 60))
 
 
