@@ -339,16 +339,6 @@ form button:hover {
         margin-left: var(--sidebar-width-collapsed);
     }
 
-    .mobile-overlay {
-        background: var(--color-overlay);
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 8;
-    }
-
     .category-card {
         width: 100px;
         padding: 10px;
