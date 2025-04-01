@@ -15,7 +15,6 @@ body {
 
 main {
     margin-top: calc(var(--navbar-height) + 20px);
-    margin-right: 40px;
     margin-bottom: 40px;
     margin-left: calc(var(--sidebar-width-expanded) + 40px);
     max-width: fit-content;
@@ -112,6 +111,16 @@ header p {
 }
 
 @media (max-width: 768px) {
+    main {
+        margin-left: var(--sidebar-width-collapsed);
+        margin-top: var(--navbar-height);
+        transition: filter 0.3s ease;
+    }
+
+    main.sidebar-collapsed {
+        margin-left: var(--sidebar-width-collapsed);
+    }
+
     .status-container {
         flex-direction: column;
     }
