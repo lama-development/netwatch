@@ -76,7 +76,6 @@ main.sidebar-collapsed {
 @media screen and (max-width: 768px) {
     main {
         margin-left: var(--sidebar-width-collapsed);
-        transition: filter 0.3s ease;
     }
 
     #log {

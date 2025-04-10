@@ -6,6 +6,7 @@ const lightTheme = {
     '--color-hover': '#eaeaec',
     '--color-accent': '#4894e7',
     '--color-text': '#000',
+    '--color-text-secondary': '#333',
     '--color-pure': '#fff'
 };
 
@@ -15,6 +16,7 @@ const darkTheme = {
     '--color-hover': '#2f2f2f',
     '--color-accent': '#4894e7',
     '--color-text': '#fff',
+    '--color-text-secondary': '#ccc',
     '--color-pure': '#000'
 };
 

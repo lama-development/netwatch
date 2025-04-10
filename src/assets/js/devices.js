@@ -1,14 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
     const devicesTableBody = document.getElementById("devices-table-body");
     const deviceForm = document.getElementById("device-form");
-    const toggleAdvancedBtn = document.getElementById("toggle-advanced");
-    const advancedSection = document.getElementById("advanced-section");
     const submitButton = deviceForm.querySelector("button[type='submit']");
     let cancelEditButton = null; // will be created on-demand
     const paginationContainer = document.getElementById("pagination"); // ensure this exists in your HTML
 
     let editingDeviceId = null;
-    let advancedVisible = false;
     let devicesList = []; // full list of devices fetched from the server
     let currentPage = 1;
     const itemsPerPage = 10; // adjust as needed
@@ -16,18 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Sorting variables
     let currentSortColumn = null;
     let currentSortDirection = 1; // 1: ascending, -1: descending
-
-    // Toggle advanced section
-    toggleAdvancedBtn.addEventListener("click", function () {
-        advancedVisible = !advancedVisible;
-        if (advancedVisible) {
-            advancedSection.classList.remove("hidden");
-            toggleAdvancedBtn.textContent = "Hide Advanced";
-        } else {
-            advancedSection.classList.add("hidden");
-            toggleAdvancedBtn.textContent = "Show Advanced";
-        }
-    });
 
     // Fetch devices from the API
     async function fetchDevices() {
@@ -160,8 +145,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${alertsDisplay}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="edit-button" data-id="${device.id}">Edit</button>
-                        <button class="delete-button" data-id="${device.id}">Delete</button>
+                        <button class="edit-button" data-id="${device.id}" data-tooltip="Edit">
+                            <i class='bx bx-edit-alt'></i>
+                        </button>
+                        <button class="delete-button" data-id="${device.id}" data-tooltip="Delete">
+                            <i class='bx bx-trash'></i>
+                        </button>
                     </div>
                 </td>
             `;
@@ -235,9 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        deviceForm.subnet.value = device.subnet || "";
-        deviceForm.gateway.value = device.gateway || "";
-        deviceForm.dns.value = device.dns || "";
         submitButton.textContent = "Update Device";
 
         // Create and add a cancel edit button only when in edit mode
@@ -277,10 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
             type: formData.get("type"),
             mac_address: formData.get("mac_address"),
             owner: formData.get("owner"),
-            custom_alerts: customAlerts,
-            subnet: formData.get("subnet"),
-            gateway: formData.get("gateway"),
-            dns: formData.get("dns")
+            custom_alerts: customAlerts
         };
 
         try {

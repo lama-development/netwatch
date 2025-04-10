@@ -24,11 +24,6 @@ function showPopup(message) {
     popup.innerHTML = '<i class="bx bx-check-circle"></i> ' + message;
     popup.classList.add("show");
 
-    const audio = document.getElementById("success-sound");
-    if (audio) {
-        audio.play();
-    }
-
     setTimeout(() => {
         popup.classList.remove("show");
     }, 3000);

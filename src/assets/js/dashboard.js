@@ -16,14 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Creazione del grafico
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
-        type: 'bar',  // Puoi anche usare 'line', 'pie', ecc.
+        type: 'pie',  // Puoi anche usare 'line', 'pie', ecc.
         data: {
             labels: ['Online', 'Offline', 'Unknown'],  // Etichette per le categorie
             datasets: [{
                 label: 'Device Status',
                 data: [onlineDevices, offlineDevices, unknownDevices],  // Dati dei dispositivi
-                backgroundColor: ['#28a745', '#dc3545', '#ffc107'],
-                borderColor: ['#28a745', '#dc3545', '#ffc107'],
+                backgroundColor: ['#28a745', '#dc3545', '#6c757d'],
+                borderColor: ['#28a745', '#dc3545', '#6c757d'],
                 borderWidth: 1
             }]
         },
