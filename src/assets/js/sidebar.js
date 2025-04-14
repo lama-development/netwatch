@@ -10,11 +10,13 @@ fetch("/sidebar")
         const sidebarCollapsed = document.querySelector(".sidebar-collapsed");
         const sidebarExpanded = document.querySelector(".sidebar-expanded");
         const mainContent = document.querySelector("main");
+        const bodyElement = document.body;
 
         // Forza la sidebar a partire in stato collapsed su ogni nuova pagina
         sidebar.classList.add("collapsed");
         if (window.innerWidth > 768) {
             mainContent.classList.add("sidebar-collapsed");
+            bodyElement.classList.add("sidebar-collapsed");
         } else {
             // Se esiste già l'overlay, lo rimuovo (opzionale)
             removeMobileOverlay();
@@ -49,6 +51,7 @@ fetch("/sidebar")
             sidebar.classList.add("collapsed");
             if (window.innerWidth > 768) {
                 mainContent.classList.add("sidebar-collapsed");
+                bodyElement.classList.add("sidebar-collapsed");
             } else {
                 removeMobileOverlay();
             }
@@ -60,6 +63,7 @@ fetch("/sidebar")
             sidebar.classList.remove("collapsed");
             if (window.innerWidth > 768) {
                 mainContent.classList.remove("sidebar-collapsed");
+                bodyElement.classList.remove("sidebar-collapsed");
             } else {
                 // On mobile, create the overlay to darken main content and capture click
                 createMobileOverlay();

@@ -94,10 +94,7 @@ def serialize_device(device: models.Device) -> dict:
         "packet_loss": device.packet_loss,
         "jitter": device.jitter,
         "uptime": device.uptime,
-        "custom_alerts": device.custom_alerts,
-        "subnet": device.subnet,
-        "gateway": device.gateway,
-        "dns": device.dns
+        "custom_alerts": device.custom_alerts
     }
 
 async def tail_log(file_path: str):
@@ -175,9 +172,6 @@ class DeviceCreate(BaseModel):
     mac_address: Optional[str] = None
     owner: Optional[str] = None
     custom_alerts: Optional[List[str]] = []
-    subnet: Optional[str] = None
-    gateway: Optional[str] = None
-    dns: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

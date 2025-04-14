@@ -17,6 +17,3 @@ class Device(Base):
     jitter = Column(Float, default=0.0)                 # Hidden; calculated by monitor
     uptime = Column(Float, default=0.0)                 # Hidden; calculated by monitor
     custom_alerts = Column(String, nullable=True)       # e.g., comma-separated values
-    subnet = Column(String, nullable=True)              # Advanced
-    gateway = Column(String, nullable=True)             # Advanced
-    dns = Column(String, nullable=True)                 # Advanced
