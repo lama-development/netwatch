@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     typeField.value = category;
                 }
                 // Scroll smoothly to the device form
-                const deviceForm = document.getElementById("device-form");
+                const deviceForm = document.getElementById("add-device");
                 if (deviceForm) {
                     deviceForm.scrollIntoView({ behavior: "smooth" });
                 }
@@ -179,6 +179,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const device = devicesList.find(d => d.id == deviceId);
                 if (device) {
                     populateFormForEditing(device);
+                    
+                    // Add scroll to the form when edit button is clicked
+                    const formSection = document.getElementById("add-device");
+                    if (formSection) {
+                        formSection.scrollIntoView({ behavior: "smooth" });
+                    }
                 }
             });
         });

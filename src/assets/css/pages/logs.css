@@ -1,7 +1,7 @@
 /* /src/assets/css/logs.css */
 
-@import "navbar.css";
-@import "sidebar.css";
+@import "/static/css/components/navbar.css";
+@import "/static/css/components/sidebar.css";
 
 :root {
     --color-console-default: #fff;

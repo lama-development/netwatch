@@ -182,7 +182,7 @@ async def get_navbar(request: Request):
     """
     Render the navigation bar component.
     """
-    return templates.TemplateResponse("navbar.html", {"request": request})
+    return templates.TemplateResponse("components/navbar.html", {"request": request})
 
 
 @app.get("/sidebar", response_class=HTMLResponse)
@@ -190,7 +190,7 @@ async def get_sidebar(request: Request):
     """
     Render the sidebar component.
     """
-    return templates.TemplateResponse("sidebar.html", {"request": request})
+    return templates.TemplateResponse("components/sidebar.html", {"request": request})
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +201,7 @@ async def index(request: Request):
     """
     Render the home page.
     """
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("pages/index.html", {"request": request})
 
 
 @app.get("/devices", response_class=HTMLResponse)
@@ -209,7 +209,7 @@ async def devices_page(request: Request):
     """
     Render the devices management page.
     """
-    return templates.TemplateResponse("devices.html", {"request": request})
+    return templates.TemplateResponse("pages/devices.html", {"request": request})
 
 
 @app.get("/logs", response_class=HTMLResponse)
@@ -217,7 +217,7 @@ async def logs_page(request: Request):
     """
     Render the logs display page.
     """
-    return templates.TemplateResponse("logs.html", {"request": request})
+    return templates.TemplateResponse("pages/logs.html", {"request": request})
 
 
 @app.get("/settings", response_class=HTMLResponse)
@@ -225,7 +225,7 @@ async def settings_page(request: Request):
     """
     Render the settings page.
     """
-    return templates.TemplateResponse("settings.html", {"request": request})
+    return templates.TemplateResponse("pages/settings.html", {"request": request})
 
 
 # ---------------------------------------------------------------------------

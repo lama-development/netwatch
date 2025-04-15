@@ -1,0 +1,44 @@
+<!-- /src/app/templates/base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NetWatch{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/satoshi.css">
+    <link rel="stylesheet" href="/static/css/components/navbar.css">
+    <link rel="stylesheet" href="/static/css/components/sidebar.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <!-- Page specific CSS -->
+    {% block css %}{% endblock %}
+    <!-- Common JavaScript -->
+    <script src="/static/js/navbar.js" defer></script>
+    <script src="/static/js/sidebar.js" defer></script>
+    <!-- Page specific JavaScript -->
+    {% block head_js %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    {% include 'components/navbar.html' %}
+    
+    <!-- Sidebar -->
+    {% include 'components/sidebar.html' %}
+    
+    <!-- Main Content -->
+    <main{% if sidebar_collapsed %} class="sidebar-collapsed"{% endif %}>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- JavaScript bottom -->
+    {% block bottom_js %}{% endblock %}
+</body>
+
+</html>

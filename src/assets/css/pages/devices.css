@@ -1,7 +1,7 @@
 /* src/assets/css/devices.css */
 
-@import "navbar.css";
-@import "sidebar.css";
+@import "/static/css/components/navbar.css";
+@import "/static/css/components/sidebar.css";
 
 * {
     box-sizing: border-box;
@@ -101,14 +101,14 @@ header h1 {
     top: 0.75rem;
     right: 0.75rem;
     color: var(--color-accent);
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    opacity: 1; /* Change from 0 to 1 to always show the button */
     background: none;
     border: none;
     padding: 0;
     cursor: pointer;
 }
 
+/* Remove this rule since we want the button always visible */
 .category-card:hover .add-device {
     opacity: 1;
 }
@@ -158,6 +158,10 @@ tbody td {
     border-bottom: 1px solid var(--color-hover);
 }
 
+tbody td:last-child {
+    text-align: center; /* Center align the action buttons cell */
+}
+
 tr:last-child td {
     border-bottom: none;
 }
@@ -166,7 +170,7 @@ tr:last-child td {
 .action-buttons {
     display: flex;
     gap: 0.5rem;
-    justify-content: flex-end;
+    justify-content: center; /* Change from flex-end to center */
 }
 
 .action-buttons button {
@@ -177,7 +181,7 @@ tr:last-child td {
     height: 2rem;
     padding: 0;
     border: none;
-    
+    border-radius: 50%;
     font-size: 1.25rem;
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -337,10 +341,10 @@ form button:hover {
 
 /* Cancel Edit Button */
 #cancel-edit {
-    background-color: var(--color-text);
-    color: var(--color-pure);
+    background-color: transparent;
+    border: 1px solid var(--color-text-secondary);
+    color: var(--color-text-secondary);
     padding: 0.75rem 1.5rem;
-    border: none;
     font-size: 0.875rem;
     font-weight: var(--font-semibold);
     cursor: pointer;

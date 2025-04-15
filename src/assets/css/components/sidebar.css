@@ -1,6 +1,6 @@
 /* /src/assets/css/sidebar.css */
 
-@import "global.css";
+@import "/static/css/global.css";
 
 .sidebar {
     background-color: var(--color-navbar);

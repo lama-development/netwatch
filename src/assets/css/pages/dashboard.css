@@ -1,5 +1,5 @@
-@import "navbar.css";
-@import "sidebar.css";
+@import "/static/css/components/navbar.css";
+@import "/static/css/components/sidebar.css";
 
 * {
     box-sizing: border-box;
