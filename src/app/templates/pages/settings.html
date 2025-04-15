@@ -1,100 +1,85 @@
-<!-- /src/app/templates/settings.html -->
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
+{% block title %}Settings - NetWatch{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - NetWatch</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <!-- CSS -->
-    <link rel="stylesheet" href="/static/css/pages/settings.css">
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-    <!-- JavaScript -->
-    <script src="/static/js/sidebar.js" defer></script>
-    <script src="/static/js/navbar.js" defer></script>
-    <script src="/static/js/settings.js" defer></script>
-</head>
+{% block css %}
+<link rel="stylesheet" href="/static/css/pages/settings.css">
+{% endblock %}
 
-<body>
-    <!-- Navbar -->
-    <div id="navbar-component"></div>
-    <!-- Sidebar -->
-    <div id="sidebar-component"></div>
-    <!-- Popup -->
-    <div id="popup" class="popup"></div>
-    <h2>Settings</h2>
-    <main>
-        <div class="category">
-            <div class="setting">
-                <label for="ping_timeout">Ping Timeout</label>
-                <div class="input-group">
-                    <input type="number" id="ping_timeout" name="ping_timeout">
-                    <button onclick="updateSetting('ping_timeout')">
-                        <i class="bx bx-refresh"></i>
-                        Update
-                    </button>
-                </div>
-                <p class="description">Sets the maximum time (in seconds) to wait for a ping response before the host unreachable.</p>
-            </div>
-            <div class="setting">
-                <label for="log_level">Log Level</label>
-                <div class="input-group">
-                    <select id="log_level" name="log_level">
-                        <option value="DEBUG">DEBUG</option>
-                        <option value="INFO">INFO</option>
-                        <option value="WARN">WARN</option>
-                        <option value="ERROR">ERROR</option>
-                    </select>
-                    <button onclick="updateSetting('log_level')">
-                        <i class="bx bx-refresh"></i>
-                        Update
-                    </button>
-                </div>
-                <p class="description">Specifies the verbosity of the system logs, using levels such as DEBUG, INFO, WARN, and ERROR.</p>
-            </div>
-            <div class="setting">
-                <label for="check_interval">Check Interval</label>
-                <div class="input-group">
-                    <input type="number" id="check_interval" name="check_interval">
-                    <button onclick="updateSetting('check_interval')">
-                        <i class="bx bx-refresh"></i>
-                        Update
-                    </button>
-                </div>
-                <p class="description">Specifies the delay (in seconds) to wait after completing a full cycle of pinging all devices before starting the next cycle.</p>
-            </div>
-            <div class="setting">
-                <label for="retry_interval">Retry Interval</label>
-                <div class="input-group">
-                    <input type="number" id="retry_interval" name="retry_interval">
-                    <button onclick="updateSetting('retry_interval')">
-                        <i class="bx bx-refresh"></i>
-                        Update
-                    </button>
-                </div>
-                <p class="description">Indicates the waiting time (in seconds) between consecutive retry attempts following a failed ping.</p>
-            </div>
-            <div class="setting">
-                <label for="max_retries">Max Retries</label>
-                <div class="input-group">
-                    <input type="number" id="max_retries" name="max_retries">
-                    <button onclick="updateSetting('max_retries')">
-                        <i class="bx bx-refresh"></i>
-                        Update
-                    </button>
-                </div>
-                <p class="description">Defines the total number of ping attempts to be made when a device appears offline before ceasing further retries.</p>
-            </div>
+{% block content %}
+<header>
+    <h1>Settings</h1>
+</header>
+<div class="category">
+    <div class="setting">
+        <label for="ping_timeout">Ping Timeout</label>
+        <div class="input-group">
+            <input type="number" id="ping_timeout" name="ping_timeout">
+            <button onclick="updateSetting('ping_timeout')">
+                <i class="bx bx-refresh"></i>
+                Update
+            </button>
         </div>
-        <button onclick="saveAll()">
-            <i class="bx bx-save"></i>
-            Save all settings
-        </button>
-    </main>
-</body>
+        <p class="description">Sets the maximum time (in seconds) to wait for a ping response before the host unreachable.</p>
+    </div>
+    <div class="setting">
+        <label for="log_level">Log Level</label>
+        <div class="input-group">
+            <select id="log_level" name="log_level">
+                <option value="DEBUG">DEBUG</option>
+                <option value="INFO">INFO</option>
+                <option value="WARN">WARN</option>
+                <option value="ERROR">ERROR</option>
+            </select>
+            <button onclick="updateSetting('log_level')">
+                <i class="bx bx-refresh"></i>
+                Update
+            </button>
+        </div>
+        <p class="description">Specifies the verbosity of the system logs, using levels such as DEBUG, INFO, WARN, and ERROR.</p>
+    </div>
+    <div class="setting">
+        <label for="check_interval">Check Interval</label>
+        <div class="input-group">
+            <input type="number" id="check_interval" name="check_interval">
+            <button onclick="updateSetting('check_interval')">
+                <i class="bx bx-refresh"></i>
+                Update
+            </button>
+        </div>
+        <p class="description">Specifies the delay (in seconds) to wait after completing a full cycle of pinging all devices before starting the next cycle.</p>
+    </div>
+    <div class="setting">
+        <label for="retry_interval">Retry Interval</label>
+        <div class="input-group">
+            <input type="number" id="retry_interval" name="retry_interval">
+            <button onclick="updateSetting('retry_interval')">
+                <i class="bx bx-refresh"></i>
+                Update
+            </button>
+        </div>
+        <p class="description">Indicates the waiting time (in seconds) between consecutive retry attempts following a failed ping.</p>
+    </div>
+    <div class="setting">
+        <label for="max_retries">Max Retries</label>
+        <div class="input-group">
+            <input type="number" id="max_retries" name="max_retries">
+            <button onclick="updateSetting('max_retries')">
+                <i class="bx bx-refresh"></i>
+                Update
+            </button>
+        </div>
+        <p class="description">Defines the total number of ping attempts to be made when a device appears offline before ceasing further retries.</p>
+    </div>
+    <button onclick="saveAll()">
+        <i class="bx bx-save"></i>
+        Save all settings
+    </button>
+</div>
+<!-- Popup -->
+<div id="popup" class="popup"></div>
+{% endblock %}
 
-</html>
+{% block bottom_js %}
+<script src="/static/js/settings.js" defer></script>
+{% endblock %}

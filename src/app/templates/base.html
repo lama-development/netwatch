@@ -9,11 +9,15 @@
     <title>{% block title %}NetWatch{% endblock %}</title>
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet">
     <!-- Common CSS -->
     <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/satoshi.css">
     <link rel="stylesheet" href="/static/css/components/navbar.css">
     <link rel="stylesheet" href="/static/css/components/sidebar.css">
+    <link rel="stylesheet" href="/static/css/components/footer.css">
     <!-- Icons -->
     <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
     <!-- Page specific CSS -->
@@ -36,6 +40,9 @@
     <main{% if sidebar_collapsed %} class="sidebar-collapsed"{% endif %}>
         {% block content %}{% endblock %}
     </main>
+    
+    <!-- Footer -->
+    {% include 'components/footer.html' %}
     
     <!-- JavaScript bottom -->
     {% block bottom_js %}{% endblock %}

@@ -1,120 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devices - NetWatch</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/css/pages/devices.css">
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-    <script src="/static/js/sidebar.js" defer></script>
-    <script src="/static/js/navbar.js" defer></script>
-    <script src="/static/js/devices.js" defer></script>
-</head>
+{% block title %}Devices - NetWatch{% endblock %}
 
-<body>
-    <div id="navbar-component"></div>
-    <div id="sidebar-component"></div>
+{% block css %}
+<link rel="stylesheet" href="/static/css/pages/devices.css">
+{% endblock %}
 
-    <main>
-        <header>
-            <h1>Devices</h1>
-        </header>
+{% block content %}
+<header>
+    <h1>Devices</h1>
+</header>
 
-        <section>
-            <div class="devices-summary-widget">
-                <div class="total-devices">
-                    <div id="total-number" class="total-number">0</div>
-                    <div class="total-text">Added Devices</div>
-                </div>
+<section>
+    <div class="devices-summary-widget">
+        <div class="total-devices">
+            <div id="total-number" class="total-number">0</div>
+            <div class="total-text">Added Devices</div>
+        </div>
 
-                <div id="categories-container" class="categories">
-                    <!-- Category cards will be injected here -->
-                </div>
-            </div>
-        </section>
+        <div id="categories-container" class="categories">
+            <!-- Category cards will be injected here -->
+        </div>
+    </div>
+</section>
 
-        <section id="device-list">
-            <h2>Manage Devices</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-sort="name">Device Name <i class='bx bx-sort'></i></th>
-                            <th data-sort="ip">IP Address <i class='bx bx-sort'></i></th>
-                            <th data-sort="type">Type <i class='bx bx-sort'></i></th>
-                            <th data-sort="owner">Owner <i class='bx bx-sort'></i></th>
-                            <th data-sort="custom_alerts">Alerts <i class='bx bx-sort'></i></th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="devices-table-body">
-                        <!-- Device rows will be inserted here via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <div id="pagination"></div>
-        </section>
+<section id="device-list">
+    <h2>Manage Devices</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th data-sort="name">Device Name <i class='bx bx-sort'></i></th>
+                    <th data-sort="ip">IP Address <i class='bx bx-sort'></i></th>
+                    <th data-sort="type">Type <i class='bx bx-sort'></i></th>
+                    <th data-sort="owner">Owner <i class='bx bx-sort'></i></th>
+                    <th data-sort="custom_alerts">Alerts <i class='bx bx-sort'></i></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="devices-table-body">
+                <!-- Device rows will be inserted here via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    <div id="pagination"></div>
+</section>
 
-        <section id="add-device">
-            <h2>Add New Device</h2>
-            <form id="device-form">
-                <div class="form-group">
-                    <label for="name">Device Name</label>
-                    <input type="text" id="name" name="name" placeholder="Enter device name" required>
-                </div>
-                <div class="form-group">
-                    <label for="ip">IP Address</label>
-                    <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.100" required>
-                </div>
-                <div class="form-group">
-                    <label for="type">Device Type</label>
-                    <select id="type" name="type" required>
-                        <option value="" disabled selected>Select device type</option>
-                        <option value="Computer">Computer</option>
-                        <option value="Printer">Printer</option>
-                        <option value="Router">Router</option>
-                        <option value="Switch">Switch</option>
-                        <option value="Server">Server</option>
-                        <option value="Firewall">Firewall</option>
-                        <option value="Access Point">Access Point</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="mac_address">MAC Address <span class="optional">(optional)</span></label>
-                    <input type="text" id="mac_address" name="mac_address" placeholder="e.g. 00:1A:2B:3C:4D:5E">
-                </div>
-                <div class="form-group">
-                    <label for="owner">Owner <span class="optional">(optional)</span></label>
-                    <input type="text" id="owner" name="owner" placeholder="Device owner or department">
-                </div>
+<section id="add-device">
+    <h2>Add New Device</h2>
+    <form id="device-form">
+        <div class="form-group">
+            <label for="name">Device Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. John's Laptop" required>
+        </div>
+        <div class="form-group">
+            <label for="ip">IP Address</label>
+            <input type="text" id="ip" name="ip" placeholder="e.g. 192.168.1.100" required>
+        </div>
+        <div class="form-group">
+            <label for="type">Device Type</label>
+            <select id="type" name="type" required>
+                <option value="" disabled selected>Select device type</option>
+                <option value="Computer">Computer</option>
+                <option value="Printer">Printer</option>
+                <option value="Router">Router</option>
+                <option value="Switch">Switch</option>
+                <option value="Server">Server</option>
+                <option value="Firewall">Firewall</option>
+                <option value="Access Point">Access Point</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="mac_address">MAC Address <span class="optional">(optional)</span></label>
+            <input type="text" id="mac_address" name="mac_address" placeholder="e.g. 00:1A:2B:3C:4D:5E">
+        </div>
+        <div class="form-group">
+            <label for="owner">Owner <span class="optional">(optional)</span></label>
+            <input type="text" id="owner" name="owner" placeholder="e.g. John or IT Department">
+        </div>
 
-                <fieldset class="form-group">
-                    <legend>Alert Settings <span class="optional">(optional)</span></legend>
-                    <label>
-                        <input type="checkbox" name="custom_alerts" value="High Latency">
-                        High Latency
-                    </label>
-                    <label>
-                        <input type="checkbox" name="custom_alerts" value="Device Offline">
-                        Device Offline
-                    </label>
-                    <label>
-                        <input type="checkbox" name="custom_alerts" value="Packet Loss">
-                        Packet Loss
-                    </label>
-                    <label>
-                        <input type="checkbox" name="custom_alerts" value="Port Closed">
-                        Port Closed
-                    </label>
-                </fieldset>
+        <fieldset class="form-group">
+            <legend>Alert Settings <span class="optional">(optional)</span></legend>
+            <label>
+                <input type="checkbox" name="custom_alerts" value="High Latency">
+                High Latency
+            </label>
+            <label>
+                <input type="checkbox" name="custom_alerts" value="Device Offline">
+                Device Offline
+            </label>
+            <label>
+                <input type="checkbox" name="custom_alerts" value="Packet Loss">
+                Packet Loss
+            </label>
+            <label>
+                <input type="checkbox" name="custom_alerts" value="Port Closed">
+                Port Closed
+            </label>
+        </fieldset>
 
-                <button type="submit">Add Device</button>
-            </form>
-        </section>
-    </main>
-</body>
+        <button type="submit">Add Device</button>
+    </form>
+</section>
+{% endblock %}
 
-</html>
+{% block bottom_js %}
+<script src="/static/js/devices.js" defer></script>
+{% endblock %}

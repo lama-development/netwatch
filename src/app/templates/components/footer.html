@@ -1,0 +1,14 @@
+<!-- /src/app/templates/components/footer.html -->
+
+<footer class="footer">
+    <div class="footer-content">
+        <p>&copy; <span id="current-year"></span> NetWatch</p>
+        <p>Version 1.0.0 | <a href="https://github.com/lama-development/netwatch/issues" target="_blank">Report an issue</a></p>
+        <p>Created by <a href="https://davidelamarca.com" target="_blank">Davide La Marca</a></p>
+    </div>
+</footer>
+
+<script>
+    // Set current year for copyright
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+</script>

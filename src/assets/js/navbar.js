@@ -17,7 +17,7 @@ const darkTheme = {
     '--color-accent': '#4894e7',
     '--color-text': '#fff',
     '--color-text-secondary': '#ccc',
-    '--color-pure': '#000'
+    '--color-pure': '#fff'
 };
 
 let currentTheme = 'light';
@@ -39,45 +39,37 @@ function updateThemeIcon(themeBtn, theme) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // VCheck if there is a saved theme in local storage
+    // Verifica se c'è un tema salvato nel localStorage
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     
-    // Apply the saved theme
+    // Applica il tema salvato
     setTheme(savedTheme);
     currentTheme = savedTheme;
 
-    fetch("/navbar")
-        .then(response => response.text())
-        .then(data => {
-            // Load navbar.html into navbar-component div
-            document.getElementById("navbar-component").innerHTML = data;
-            // After the navbar is loaded, find the theme button
-            const themeBtn = document.querySelector("#theme");
-            if (!themeBtn) {
-                console.log("Theme button not found!");
-                return;
-            }
+    // Trova il pulsante del tema direttamente (ora è già presente nel DOM)
+    const themeBtn = document.querySelector("#theme");
+    if (!themeBtn) {
+        console.log("Theme button not found!");
+        return;
+    }
 
-            // Set icon theme based on the current theme
-            updateThemeIcon(themeBtn, currentTheme);
+    // Imposta l'icona del tema in base al tema corrente
+    updateThemeIcon(themeBtn, currentTheme);
 
-            themeBtn.addEventListener("click", () => {
-                if (currentTheme === 'light') {
-                    setTheme('dark');
-                    currentTheme = 'dark';
-                    updateThemeIcon(themeBtn, 'dark');
-                } else {
-                    setTheme('light');
-                    currentTheme = 'light';
-                    updateThemeIcon(themeBtn, 'light');
-                }
+    // Aggiungi event listener per il cambio tema
+    themeBtn.addEventListener("click", () => {
+        if (currentTheme === 'light') {
+            setTheme('dark');
+            currentTheme = 'dark';
+            updateThemeIcon(themeBtn, 'dark');
+        } else {
+            setTheme('light');
+            currentTheme = 'light';
+            updateThemeIcon(themeBtn, 'light');
+        }
 
-                // Save preference to local storage
-                localStorage.setItem('theme', currentTheme);
-            });
-        })
-        .catch(error => {
-            console.log("Error loading the navbar:", error);
-        });
+        // Salva preferenza nel localStorage
+        localStorage.setItem('theme', currentTheme);
+    });
 });
 

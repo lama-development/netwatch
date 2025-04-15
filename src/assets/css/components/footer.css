@@ -1,0 +1,61 @@
+/* Footer styles */
+.footer {
+    width: calc(100% - var(--sidebar-width-expanded));
+    margin-left: var(--sidebar-width-expanded);
+    background-color: var(--color-navbar);
+    color: var(--color-text);
+    margin-top: auto;
+    border-top: 1px solid var(--color-hover);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+}
+
+.footer-content p {
+    margin: 5px 15px 5px 0;
+}
+
+.footer-content a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.footer-content a:hover {
+    text-decoration: underline;
+}
+
+/* Make the footer stick to the bottom */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Adjust footer when sidebar is collapsed */
+main.sidebar-collapsed + .footer {
+    width: calc(100% - var(--sidebar-width-collapsed));
+    margin-left: var(--sidebar-width-collapsed);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 10px 15px;
+    }
+    
+    .footer-content p {
+        margin: 5px 0;
+    }
+}

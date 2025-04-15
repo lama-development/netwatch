@@ -1,7 +1,6 @@
 /* src/assets/css/devices.css */
 
-@import "/static/css/components/navbar.css";
-@import "/static/css/components/sidebar.css";
+/* Le importazioni di navbar.css e sidebar.css sono state rimosse poiché già incluse nel template base */
 
 * {
     box-sizing: border-box;

@@ -72,7 +72,7 @@
 
 .bottom-content {
     position: fixed;
-    bottom: 60px;
+    bottom: 58px;
     width: var(--sidebar-width-expanded);
     cursor: pointer;
 }

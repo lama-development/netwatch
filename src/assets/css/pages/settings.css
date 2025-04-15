@@ -1,7 +1,6 @@
 /* /src/assets/css/settings.css */
 
-@import "/static/css/components/navbar.css";
-@import "/static/css/components/sidebar.css";
+/* Le importazioni di navbar.css e sidebar.css sono state rimosse poiché già incluse nel template base */
 
 * {
     box-sizing: border-box;
@@ -14,28 +13,19 @@ body {
     color: var(--color-text);
 }
 
-/* Settings title outside main container */
-body > h2 {
-    font-size: 1.75rem;
-    font-weight: var(--font-bold);
-    margin-top: calc(var(--navbar-height) + 40px);
-    margin-left: calc(var(--sidebar-width-expanded) + 40px);
-    margin-bottom: 20px;
-}
-
-body.sidebar-collapsed > h2 {
-    margin-left: calc(var(--sidebar-width-collapsed) + 40px);
-}
-
 main {
-    background-color: var(--color-navbar);
-    border: 1px solid var(--color-hover);
-    margin-top: 0;
+    margin-top: calc(var(--navbar-height) + 40px);
     margin-right: 40px;
     margin-bottom: 40px;
     margin-left: calc(var(--sidebar-width-expanded) + 40px);
-    padding: 30px;
     max-width: 1920px;
+}
+
+header h1 {
+    font-size: 1.75rem;
+    font-weight: var(--font-bold);
+    color: var(--color-text);
+    margin-bottom: 20px;
 }
 
 main.sidebar-collapsed {
@@ -44,6 +34,9 @@ main.sidebar-collapsed {
 }
 
 .category {
+    background-color: var(--color-navbar);
+    border: 1px solid var(--color-hover);
+    padding: 30px;
     margin-bottom: 40px;
 }
 
@@ -74,7 +67,7 @@ main.sidebar-collapsed {
     height: 42px;
     width: 100%;
     padding: 10px;
-    
+
     font-size: 16px;
     margin-bottom: 5px;
 }
@@ -120,7 +113,8 @@ main.sidebar-collapsed {
     opacity: .8;
 }
 
-main>button {
+/* Save All Button */
+.category > button {
     background-color: #28a745;
     color: var(--color-pure);
     font-weight: var(--font-semibold);
@@ -132,7 +126,7 @@ main>button {
     width: fit-content;
 }
 
-main>button:hover {
+.category > button:hover {
     opacity: .8;
 }
 
@@ -145,7 +139,6 @@ main>button:hover {
     top: calc(var(--navbar-height) + 20px);
     right: 20px;
     padding: 15px 20px;
-    
     opacity: 0;
     z-index: 1000;
 }
@@ -155,11 +148,11 @@ main>button:hover {
 }
 
 @media screen and (max-width: 768px) {
-    body > h2 {
+    body>h2 {
         margin-top: calc(var(--navbar-height) + 20px);
         margin-left: calc(var(--sidebar-width-collapsed) + 15px);
     }
-    
+
     main {
         margin-right: 15px;
         margin-left: calc(var(--sidebar-width-collapsed) + 15px);
@@ -170,8 +163,8 @@ main>button:hover {
         margin-left: var(--sidebar-width-collapsed);
     }
 
-    
-main>button {
-    margin-top: 0;
-}
+
+    main>button {
+        margin-top: 0;
+    }
 }

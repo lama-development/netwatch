@@ -1,32 +1,17 @@
 <!-- /src/app/templates/logs.html -->
 
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs - NetWatch</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <!-- CSS -->
-    <link rel="stylesheet" href="/static/css/pages/logs.css">
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-    <!-- JavaScript -->
-    <script src="/static/js/sidebar.js" defer></script>
-    <script src="/static/js/navbar.js" defer></script>
-    <script src="/static/js/logs.js" defer></script>
-</head>
+{% block title %}Logs - NetWatch{% endblock %}
 
-<body>
-    <!-- Navbar -->
-    <div id="navbar-component"></div>
-    <!-- Sidebar -->
-    <div id="sidebar-component"></div>
-    <main>
-        <pre id="log"></pre>
-    </main>
-</body>
+{% block css %}
+<link rel="stylesheet" href="/static/css/pages/logs.css">
+{% endblock %}
 
-</html>
+{% block content %}
+<pre id="log"></pre>
+{% endblock %}
+
+{% block bottom_js %}
+<script src="/static/js/logs.js" defer></script>
+{% endblock %}

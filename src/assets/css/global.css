@@ -1,7 +1,5 @@
 /* /src/assets/css/global.css */
 
-@import url("satoshi.css");
-
 :root {
     /* Light mode colors */
     --color-bg: #fff;
@@ -13,9 +11,9 @@
     --color-pure: #fff;
     --color-overlay: rgba(0, 0, 0, 0.5);
     /* Font weights */
-    --font-regular: 500;
-    --font-semibold: 700;
-    --font-bold: 900;
+    --font-regular: 200;
+    --font-semibold: 400;
+    --font-bold: 800;
     /* Variables */
     --navbar-height: 60px;
     --sidebar-width-expanded: 250px;
@@ -36,7 +34,7 @@
 } 
 
 * {
-    font-family: "Satoshi-Variable", sans-serif;
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     scroll-behavior: smooth;
 }
 
