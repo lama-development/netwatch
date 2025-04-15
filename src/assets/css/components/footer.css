@@ -1,4 +1,3 @@
-/* Footer styles */
 .footer {
     width: calc(100% - var(--sidebar-width-expanded));
     margin-left: var(--sidebar-width-expanded);
@@ -30,7 +29,6 @@
     text-decoration: underline;
 }
 
-/* Make the footer stick to the bottom */
 body {
     min-height: 100vh;
     display: flex;
@@ -41,13 +39,11 @@ main {
     flex: 1;
 }
 
-/* Adjust footer when sidebar is collapsed */
 main.sidebar-collapsed + .footer {
     width: calc(100% - var(--sidebar-width-collapsed));
     margin-left: var(--sidebar-width-collapsed);
 }
 
-/* Responsive adjustments */
 @media screen and (max-width: 768px) {
     .footer {
         width: calc(100% - var(--sidebar-width-collapsed));

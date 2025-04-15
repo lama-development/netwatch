@@ -1,20 +1,10 @@
-/* /src/assets/css/pages/logs.css */
-
-/* Le importazioni di navbar.css e sidebar.css sono state rimosse poiché già incluse nel template base */
-
 :root {
+    --color-console-bg: #000;
     --color-console-default: #fff;
     --color-console-system: #729fcf;
     --color-console-online: #8ae234;
     --color-console-retrying: #fce94f;
     --color-console-offline: #ef2929;
-    /* --color-console-error: #ad7fa8; */
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body {
@@ -33,7 +23,7 @@ main.sidebar-collapsed {
 }
 
 #log {
-    background-color: #000;
+    background-color: var(--color-console-bg);
     font-family: monospace;
     font-size: 14px;
     padding: 1rem;

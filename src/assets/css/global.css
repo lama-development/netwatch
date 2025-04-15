@@ -1,5 +1,3 @@
-/* /src/assets/css/global.css */
-
 :root {
     /* Light mode colors */
     --color-bg: #fff;
@@ -20,22 +18,12 @@
     --sidebar-width-collapsed: 60px;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        /* Dark mode colors */
-        --color-bg: #232323;
-        --color-navbar: #171717;
-        --color-hover: #2f2f2f;
-        --color-accent: #4894e7;
-        --color-text: #fff;
-        --color-text-secondary: #ccc;
-        --color-pure: #fff;
-    }
-} 
-
 * {
     font-family: "Bricolage Grotesque", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     scroll-behavior: smooth;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 @media screen and (max-width: 768px) {

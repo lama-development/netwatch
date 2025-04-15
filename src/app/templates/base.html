@@ -1,5 +1,3 @@
-<!-- /src/app/templates/base.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,18 +30,14 @@
 <body>
     <!-- Navbar -->
     {% include 'components/navbar.html' %}
-    
     <!-- Sidebar -->
     {% include 'components/sidebar.html' %}
-    
     <!-- Main Content -->
     <main{% if sidebar_collapsed %} class="sidebar-collapsed"{% endif %}>
         {% block content %}{% endblock %}
     </main>
-    
     <!-- Footer -->
     {% include 'components/footer.html' %}
-    
     <!-- JavaScript bottom -->
     {% block bottom_js %}{% endblock %}
 </body>

@@ -1,13 +1,3 @@
-/* /src/assets/css/settings.css */
-
-/* Le importazioni di navbar.css e sidebar.css sono state rimosse poiché già incluse nel template base */
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
     background-color: var(--color-bg);
     color: var(--color-text);
@@ -98,7 +88,6 @@ main.sidebar-collapsed {
     margin-bottom: 10px;
 }
 
-/* Individual Update Button */
 .setting button {
     background-color: var(--color-accent);
     color: var(--color-pure);
@@ -113,7 +102,6 @@ main.sidebar-collapsed {
     opacity: .8;
 }
 
-/* Save All Button */
 .category > button {
     background-color: #28a745;
     color: var(--color-pure);
@@ -162,7 +150,6 @@ main.sidebar-collapsed {
     main.sidebar-collapsed {
         margin-left: var(--sidebar-width-collapsed);
     }
-
 
     main>button {
         margin-top: 0;

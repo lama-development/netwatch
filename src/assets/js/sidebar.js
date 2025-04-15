@@ -1,5 +1,3 @@
-// /src/assets/js/sidebar.js
-
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.querySelector(".sidebar");
     const sidebarCollapsed = document.querySelector(".sidebar-collapsed");
@@ -7,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainContent = document.querySelector("main");
     const bodyElement = document.body;
 
-    // Funzione per creare l'overlay mobile
+    // Function to create mobile overlay
     function createMobileOverlay() {
         const overlay = document.createElement("div");
         overlay.className = "mobile-overlay";
@@ -15,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(overlay);
     }
 
-    // Funzione per rimuovere l'overlay mobile se esiste
+    // Function to remove mobile overlay if it exists
     function removeMobileOverlay() {
         const overlay = document.querySelector(".mobile-overlay");
         if (overlay) {
@@ -23,17 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Funzione per chiudere la sidebar su mobile
+    // Function to close sidebar on mobile
     function closeSidebarOnMobile() {
         sidebar.classList.add("collapsed");
         removeMobileOverlay();
         localStorage.setItem('sidebarState', 'collapsed');
     }
 
-    // Recupera lo stato salvato della sidebar o usa collapsed come default
+    // Get saved sidebar state or use collapsed as default
     const savedSidebarState = localStorage.getItem('sidebarState') || 'collapsed';
     
-    // Imposta lo stato iniziale della sidebar
+    // Set initial sidebar state
     if (savedSidebarState === 'collapsed') {
         sidebar.classList.add("collapsed");
         if (window.innerWidth > 768) {
@@ -52,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Aggiungi event listener per il pulsante di collasso
+    // Add event listener for collapse button
     if (sidebarCollapsed) {
         sidebarCollapsed.addEventListener("click", () => {
             sidebar.classList.add("collapsed");
@@ -66,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Aggiungi event listener per il pulsante di espansione
+    // Add event listener for expand button
     if (sidebarExpanded) {
         sidebarExpanded.addEventListener("click", () => {
             sidebar.classList.remove("collapsed");
@@ -80,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Evidenzia il link attivo
+    // Highlight active link
     const sidebarLinks = document.querySelectorAll(".sidebar-link");
     const currentPath = window.location.pathname;
 
@@ -95,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Aggiungi tooltip sui link quando la sidebar è collassata
+        // Add tooltips to links when sidebar is collapsed
         link.addEventListener("mouseenter", function(event) {
             if (sidebar.classList.contains("collapsed")) {
                 showTooltip(event, link.querySelector(".sidebar-text").textContent.trim());
@@ -105,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Funzione per convertire le icone da outline a filled
+// Function to convert icons from outline to filled
 function convertIconToFilled(icon) {
     const classes = icon.className.split(" ");
     if (classes.length > 1 && classes[1].startsWith("bx-")) {
@@ -114,7 +112,7 @@ function convertIconToFilled(icon) {
     icon.className = classes.join(" ");
 }
 
-// Funzione per creare e posizionare il tooltip
+// Function to create and position tooltip
 function showTooltip(event, text) {
     let tooltip = document.createElement("div");
     tooltip.className = "sidebar-tooltip";
@@ -127,7 +125,7 @@ function showTooltip(event, text) {
     tooltip.style.transform = "translateY(-50%)";
 }
 
-// Funzione per rimuovere il tooltip
+// Function to remove tooltip
 function hideTooltip() {
     document.querySelectorAll(".sidebar-tooltip").forEach(el => el.remove());
 }

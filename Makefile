@@ -7,9 +7,9 @@
 
 api:
 ifeq ($(OS),Windows_NT)
-	fastapi dev src/api/main.py --host 0.0.0.0 --port 8000
+	fastapi dev src/main.py --host 0.0.0.0 --port 8000
 else
-	sudo $(CURDIR)/.venv/bin/fastapi dev src/api/main.py --host 0.0.0.0 --port 8000
+	sudo $(CURDIR)/.venv/bin/fastapi dev src/main.py --host 0.0.0.0 --port 8000
 endif
 
 install-reqs:

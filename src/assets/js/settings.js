@@ -1,4 +1,4 @@
-// Funzione per caricare le impostazioni correnti al caricamento della pagina
+// Function to load current settings when the page loads
 async function loadSettings() {
     try {
         const response = await fetch("/api/settings");
@@ -9,7 +9,7 @@ async function loadSettings() {
         document.getElementById("retry_interval").value = settings.retry_interval;
         document.getElementById("max_retries").value = settings.max_retries;
     } catch (error) {
-        console.error("Errore nel caricamento delle impostazioni:", error);
+        console.error("Error loading settings:", error);
     }
 }
 
@@ -29,21 +29,21 @@ function showPopup(message) {
     }, 3000);
 }
 
-// Funzione per aggiornare un singolo parametro
+// Function to update a single parameter
 async function updateSetting(param) {
     try {
-        // Recupera il nuovo valore dall'input
+        // Get the new value from the input
         const input = document.getElementById(param);
         const newValue = input.value;
 
-        // Recupera le impostazioni correnti
+        // Get current settings
         const response = await fetch("/api/settings");
         const settings = await response.json();
 
-        // Aggiorna solo il parametro specificato
+        // Update only the specified parameter
         settings[param] = newValue;
 
-        // Invia le impostazioni aggiornate al server
+        // Send updated settings to the server
         const updateResp = await fetch("/api/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -52,14 +52,14 @@ async function updateSetting(param) {
         const result = await updateResp.json();
         console.log(result);
 
-        // Mostra il popup di successo
+        // Show success popup
         showPopup("Settings updated successfully");
     } catch (error) {
-        console.error("Errore nell'aggiornamento della setting:", error);
+        console.error("Error updating setting:", error);
     }
 }
 
-// Funzione per salvare tutte le modifiche contemporaneamente
+// Function to save all changes at once
 async function saveAll() {
     try {
         const settings = {
@@ -78,12 +78,12 @@ async function saveAll() {
         const result = await response.json();
         console.log(result);
 
-        // Mostra il popup di successo
+        // Show success popup
         showPopup("Settings updated successfully");
     } catch (error) {
-        console.error("Errore nel salvataggio delle impostazioni:", error);
+        console.error("Error saving settings:", error);
     }
 }
 
-// Carica le impostazioni all'avvio della pagina
+// Load settings when the page starts
 window.onload = loadSettings;

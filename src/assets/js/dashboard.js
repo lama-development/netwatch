@@ -8,20 +8,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     dateInfo.textContent = today.toLocaleDateString('en-US', options);
 
-    // Data di esempio, in un'applicazione reale dovresti ottenere questi valori da un backend o API
+    // Example data - in a real application, you would get these values from a backend or API
     const onlineDevices = 12;
     const offlineDevices = 5;
     const unknownDevices = 3;
 
-    // Creazione del grafico
+    // Create the chart
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
-        type: 'pie',  // Puoi anche usare 'line', 'pie', ecc.
+        type: 'pie',  // You can also use 'line', 'pie', etc.
         data: {
-            labels: ['Online', 'Offline', 'Unknown'],  // Etichette per le categorie
+            labels: ['Online', 'Offline', 'Unknown'],  // Labels for categories
             datasets: [{
                 label: 'Device Status',
-                data: [onlineDevices, offlineDevices, unknownDevices],  // Dati dei dispositivi
+                data: [onlineDevices, offlineDevices, unknownDevices],  // Device data
                 backgroundColor: ['#28a745', '#dc3545', '#6c757d'],
                 borderColor: ['#28a745', '#dc3545', '#6c757d'],
                 borderWidth: 1
@@ -31,19 +31,19 @@ document.addEventListener("DOMContentLoaded", function () {
             responsive: true,
             scales: {
                 y: {
-                    beginAtZero: true,  // Assicurati che l'asse Y parta da zero
+                    beginAtZero: true,  // Ensure the Y axis starts at zero
                 }
             }
         }
     });
 
-    // Funzione per aggiornare il grafico
+    // Function to update the chart
     function updateDeviceStatus(online, offline, unknown) {
         statusChart.data.datasets[0].data = [online, offline, unknown];
         statusChart.update();
     }
 
-    // Esegui l'aggiornamento con i dati iniziali
+    // Perform the update with the initial data
     updateDeviceStatus(onlineDevices, offlineDevices, unknownDevices);
 
     // Create an EventSource to listen to the SSE endpoint

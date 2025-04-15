@@ -1,5 +1,3 @@
-// /src/assets/js/logs.js
-
 function initLogStream() {
     const logElement = document.getElementById("log");
     let autoScroll = true;

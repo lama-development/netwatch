@@ -1,5 +1,3 @@
-// /src/assets/js/navbar.js
-
 const lightTheme = {
     '--color-bg': '#fff',
     '--color-navbar': '#f5f5f5',
@@ -29,7 +27,7 @@ function setTheme(theme) {
     }
 }
 
-// Funzione per aggiornare l'icona
+// Function to update the theme icon
 function updateThemeIcon(themeBtn, theme) {
     if (theme === 'dark') {
         themeBtn.classList.replace("bx-sun", "bx-moon");
@@ -39,24 +37,24 @@ function updateThemeIcon(themeBtn, theme) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Verifica se c'è un tema salvato nel localStorage
+    // Check if there's a saved theme in localStorage
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     
-    // Applica il tema salvato
+    // Apply the saved theme
     setTheme(savedTheme);
     currentTheme = savedTheme;
 
-    // Trova il pulsante del tema direttamente (ora è già presente nel DOM)
+    // Find the theme button directly (now it's already in the DOM)
     const themeBtn = document.querySelector("#theme");
     if (!themeBtn) {
         console.log("Theme button not found!");
         return;
     }
 
-    // Imposta l'icona del tema in base al tema corrente
+    // Set the theme icon based on the current theme
     updateThemeIcon(themeBtn, currentTheme);
 
-    // Aggiungi event listener per il cambio tema
+    // Add event listener for theme toggle
     themeBtn.addEventListener("click", () => {
         if (currentTheme === 'light') {
             setTheme('dark');
@@ -68,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateThemeIcon(themeBtn, 'light');
         }
 
-        // Salva preferenza nel localStorage
+        // Save preference in localStorage
         localStorage.setItem('theme', currentTheme);
     });
 });

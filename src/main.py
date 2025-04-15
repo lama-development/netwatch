@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 # Local application imports
-sys.path.append(os.getenv("PYTHONPATH", "src")) # Ensure the src directory is in the PYTHONPATH
+sys.path.append(os.getenv("PYTHONPATH", "src"))
 from app.monitor import start_monitor, stop_monitor, load_settings
 from app.db.database import SessionLocal, engine, Base
 from app.db import models, crud
