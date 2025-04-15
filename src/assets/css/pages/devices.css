@@ -248,7 +248,7 @@ form label {
 
 .optional {
     font-size: 0.75rem;
-    font-weight: normal;
+    font-weight: var(--font-regular);
     color: var(--color-text-secondary);
 }
 

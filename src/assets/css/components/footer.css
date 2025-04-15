@@ -49,6 +49,13 @@ main.sidebar-collapsed + .footer {
 
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
+    .footer {
+        width: calc(100% - var(--sidebar-width-collapsed));
+        margin-left: var(--sidebar-width-collapsed); 
+        position: relative; 
+        z-index: 1; 
+    }
+    
     .footer-content {
         flex-direction: column;
         text-align: center;
