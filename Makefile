@@ -1,4 +1,4 @@
-.PHONY: venv api install-reqs update-reqs 
+.PHONY: api install update 
 
 # mingw32-make.exe
 
@@ -12,8 +12,8 @@ else
 	sudo $(CURDIR)/.venv/bin/fastapi dev src/main.py --host 0.0.0.0 --port 8000
 endif
 
-install-reqs:
+install:
 	pip install -r requirements.txt
 
-update-reqs:
+update:
 	pip freeze > requirements.txt
