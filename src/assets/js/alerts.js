@@ -317,6 +317,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 throw new Error("Failed to resolve alert");
             }
             
+            // Remove the alert from the allAlerts array
+            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
+            if (alertIndex !== -1) {
+                allAlerts.splice(alertIndex, 1);
+                
+                // Update the filtered alerts and re-render
+                applyFilters();
+            }
+            
             // Show success message
             showPopup("Alert resolved successfully");
         } catch (error) {
