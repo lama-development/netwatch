@@ -4,11 +4,13 @@ import json
 import logging
 import threading
 import asyncio
+import time
 from contextlib import asynccontextmanager
 from typing import Optional, List, Dict
+from datetime import datetime, timedelta
 
 # Third-party imports
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -17,7 +19,7 @@ from sqlalchemy.orm import Session
 
 # Local application imports
 sys.path.append(os.getenv("PYTHONPATH", "src"))
-from app.monitor import start_monitor, stop_monitor, load_settings
+from app.monitor import start_monitor, stop_monitor, load_settings, get_latest_alerts
 from app.db.database import SessionLocal, engine, Base
 from app.db import models, crud
 
@@ -34,6 +36,17 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # Global event used to signal shutdown for background tasks
 shutdown_event = threading.Event()
+
+# Cache for expensive operations
+_cache = {
+    'log_lines': [],
+    'log_last_modified': 0,
+    'device_status': {
+        'data': {'online': 0, 'offline': 0, 'unknown': 0},
+        'last_updated': 0
+    },
+    'connected_clients': set()
+}
 
 
 # ---------------------------------------------------------------------------
@@ -96,26 +109,110 @@ def serialize_device(device: models.Device) -> dict:
         "custom_alerts": device.custom_alerts
     }
 
+def cache_log_content(force_refresh=False):
+    """Cache log content to reduce file reads."""
+    global _cache
+    
+    # Check if file has been modified since last read
+    try:
+        last_modified = os.path.getmtime(LOG_FILE)
+        if not force_refresh and last_modified <= _cache['log_last_modified']:
+            return _cache['log_lines']
+            
+        # File has been modified, read and cache it
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            _cache['log_lines'] = f.readlines()
+            _cache['log_last_modified'] = last_modified
+            return _cache['log_lines']
+    except Exception as e:
+        logging.error(f"Error caching log content: {e}")
+        return []
+
 async def tail_log(file_path: str):
     """
     Asynchronously stream log entries from the specified log file
-    using Server-Sent Events (SSE). Yields new log lines as they
-    are written to the file.
+    using Server-Sent Events (SSE). Uses caching to reduce disk I/O.
     """
-    with open(file_path, "r", encoding="utf-8") as f:
-        # Yield existing log content
-        f.seek(0)
-        for line in f:
+    client_id = id(asyncio.current_task())
+    _cache['connected_clients'].add(client_id)
+    
+    try:
+        # Initial log content from cache
+        log_lines = cache_log_content(force_refresh=True)
+        for line in log_lines:
             yield f"data: {line.rstrip()}\n\n"
-        # Move to the end of file for tailing new entries
-        f.seek(0, os.SEEK_END)
+        
+        # Track last line to avoid duplicates
+        last_line_index = len(log_lines) - 1 if log_lines else -1
+        
+        # Stream new entries
         while not shutdown_event.is_set():
-            line = f.readline()
-            if line:
-                yield f"data: {line.rstrip()}\n\n"
-            else:
-                await asyncio.sleep(0.1)
+            log_lines = cache_log_content()
+            
+            # If there are new lines, send them
+            if last_line_index < len(log_lines) - 1:
+                for i in range(last_line_index + 1, len(log_lines)):
+                    yield f"data: {log_lines[i].rstrip()}\n\n"
+                last_line_index = len(log_lines) - 1
+                
+            await asyncio.sleep(0.5)
+    finally:
+        # Remove client from connected set when connection closes
+        _cache['connected_clients'].discard(client_id)
 
+async def update_device_status_cache(background_tasks: BackgroundTasks):
+    """Update the device status cache in background."""
+    db = SessionLocal()
+    try:
+        devices = crud.get_devices(db)
+        online_count = sum(
+            1 for d in devices if d.status and "online" in d.status.lower()
+        )
+        offline_count = sum(
+            1 for d in devices if d.status and "offline" in d.status.lower()
+        )
+        total = len(devices)
+        unknown_count = total - online_count - offline_count
+        
+        # Update cache
+        _cache['device_status']['data'] = {
+            "online": online_count,
+            "offline": offline_count,
+            "unknown": unknown_count,
+        }
+        _cache['device_status']['last_updated'] = time.time()
+    except Exception as exc:
+        logging.error(f"Error updating device status cache: {exc}")
+    finally:
+        db.close()
+
+async def stream_device_status_impl():
+    """Internal implementation of device status streaming."""
+    client_id = id(asyncio.current_task())
+    _cache['connected_clients'].add(client_id)
+    
+    try:
+        # Ensure we have fresh data at the start of a new connection
+        bg_tasks = BackgroundTasks()
+        await update_device_status_cache(bg_tasks)
+        
+        # Send initial data immediately after updating
+        yield f"data: {json.dumps(_cache['device_status']['data'])}\n\n"
+        
+        # Stream updates
+        while not shutdown_event.is_set():
+            # Fetch update only if cache is stale (older than 5 seconds)
+            current_time = time.time()
+            if current_time - _cache['device_status']['last_updated'] > 5:
+                bg_tasks = BackgroundTasks()
+                await update_device_status_cache(bg_tasks)
+            
+            # Send current data regardless
+            yield f"data: {json.dumps(_cache['device_status']['data'])}\n\n"
+            await asyncio.sleep(5)  # Update every 5 seconds
+    finally:
+        # Remove client from connected set
+        _cache['connected_clients'].discard(client_id)
 
 # ---------------------------------------------------------------------------
 # Application Lifespan and Initialization
@@ -131,6 +228,10 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     setup_logger()
 
+    # Pre-cache device status at startup
+    background_tasks = BackgroundTasks()
+    await update_device_status_cache(background_tasks)
+
     # Start background monitoring as a daemon thread
     monitor_thread = threading.Thread(target=start_monitor, daemon=True)
     monitor_thread.start()
@@ -142,7 +243,7 @@ async def lifespan(app: FastAPI):
     # Shutdown procedures
     logging.info("Shutting down application...")
     stop_monitor()
-    shutdown_event.set()  # Signal tail_log to stop streaming
+    shutdown_event.set()  # Signal streaming functions to stop
     monitor_thread.join(timeout=3)
     logging.info("Application shutdown complete.")
 
@@ -162,6 +263,9 @@ class Settings(BaseModel):
     check_interval: int
     retry_interval: int
     max_retries: int
+    parallel_pings: bool
+    ping_count: int
+    cache_ttl: int
 
 
 class DeviceCreate(BaseModel):
@@ -259,7 +363,7 @@ async def get_api_settings(db: Session = Depends(get_db)):
         settings_data = crud.get_all_settings(db)
         if not settings_data:
             # If no settings exist, load defaults
-            settings_data = load_settings()
+            settings_data = load_settings(force_refresh=True)
         return settings_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving settings: {str(e)}")
@@ -278,7 +382,13 @@ async def update_api_settings(settings: Settings, db: Session = Depends(get_db))
         # Update each setting in the database
         for key, value in settings.dict().items():
             description = descriptions.get(key, "")
+            # Convert boolean to string
+            if isinstance(value, bool):
+                value = str(value)
             crud.upsert_setting(db, key, str(value), description)
+        
+        # Force refresh of cached settings
+        load_settings(force_refresh=True)
         
         return {"message": "Settings updated successfully"}
     except Exception as e:
@@ -351,36 +461,42 @@ async def stream_logs():
 
 
 @app.get("/stream/device_status")
-async def stream_device_status():
+async def stream_device_status(background_tasks: BackgroundTasks):
     """
     Stream the real-time status of devices as a Server-Sent Events (SSE) stream.
     """
-    async def event_generator():
-        while True:
-            db = SessionLocal()
-            try:
-                devices = crud.get_devices(db)
-                online_count = sum(
-                    1 for d in devices if d.status and "online" in d.status.lower()
-                )
-                offline_count = sum(
-                    1 for d in devices if d.status and "offline" in d.status.lower()
-                )
-                total = len(devices)
-                unknown_count = total - online_count - offline_count
-                data = {
-                    "online": online_count,
-                    "offline": offline_count,
-                    "unknown": unknown_count,
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-            except Exception as exc:
-                yield f"data: {json.dumps({'error': str(exc)})}\n\n"
-            finally:
-                db.close()
-            await asyncio.sleep(5)  # Update every 5 seconds
+    return StreamingResponse(stream_device_status_impl(), media_type="text/event-stream")
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@app.get("/stream/alerts")
+async def stream_alerts():
+    """
+    Stream real-time alerts as a Server-Sent Events (SSE) stream.
+    Using the alert queue from monitor module instead of querying the database.
+    """
+    client_id = id(asyncio.current_task())
+    _cache['connected_clients'].add(client_id)
+    
+    try:
+        # Function to yield latest alerts
+        async def generate():
+            last_sent_time = 0
+            
+            while not shutdown_event.is_set():
+                # Get latest alerts from the queue
+                alerts = get_latest_alerts()
+                new_alerts = [a for a in alerts if a['timestamp'] > last_sent_time]
+                
+                if new_alerts:
+                    # Update last sent time
+                    last_sent_time = max(a['timestamp'] for a in new_alerts)
+                    yield f"data: {json.dumps(new_alerts)}\n\n"
+                
+                await asyncio.sleep(1)
+                
+        return StreamingResponse(generate(), media_type="text/event-stream")
+    finally:
+        _cache['connected_clients'].discard(client_id)
 
 
 @app.get("/api/alerts")
@@ -422,6 +538,7 @@ def get_api_alerts(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving alerts: {str(e)}")
 
+
 @app.get("/api/alerts/summary")
 def get_alerts_summary(db: Session = Depends(get_db)):
     """
@@ -432,6 +549,7 @@ def get_alerts_summary(db: Session = Depends(get_db)):
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving alert summary: {str(e)}")
+
 
 @app.put("/api/alerts/{alert_id}/acknowledge")
 def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
@@ -448,6 +566,7 @@ def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error acknowledging alert: {str(e)}")
 
+
 @app.put("/api/alerts/{alert_id}/resolve")
 def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
     """
@@ -462,3 +581,46 @@ def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error resolving alert: {str(e)}")
+
+
+@app.get("/api/metrics/{device_id}")
+def get_device_metrics(device_id: int, timeframe: str = "1h", db: Session = Depends(get_db)):
+    """
+    Get historical metrics for a device.
+    Timeframe can be '1h', '24h', '7d' to specify how far back to look.
+    """
+    try:
+        # Get the device to ensure it exists
+        device = crud.get_device(db, device_id)
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+            
+        # Determine the time range
+        now = datetime.now()
+        time_ranges = {
+            "1h": now - timedelta(hours=1),
+            "24h": now - timedelta(days=1),
+            "7d": now - timedelta(days=7)
+        }
+        
+        from_time = time_ranges.get(timeframe, now - timedelta(hours=1))
+        
+        # This would typically query a time-series database or logs
+        # For now, return current metrics
+        return {
+            "device_id": device_id,
+            "name": device.name,
+            "current": {
+                "status": device.status,
+                "packet_loss": device.packet_loss,
+                "jitter": device.jitter,
+                "uptime": device.uptime
+            },
+            "timeframe": timeframe,
+            # In a real implementation, this would come from historical data
+            "history": []
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving device metrics: {str(e)}")

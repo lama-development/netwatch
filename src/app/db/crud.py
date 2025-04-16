@@ -1,6 +1,51 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .models import Device, Setting, Alert
+import time
+from functools import lru_cache
+from typing import Dict, List, Optional, Tuple, Any
 
+# Cache for database query results
+_db_cache = {
+    'settings': {},
+    'settings_timestamp': 0,
+    'devices_count': 0,
+    'devices_timestamp': 0,
+    'alerts_count': {},
+    'alerts_timestamp': 0
+}
+
+# Cache TTL in seconds (5 minutes default)
+CACHE_TTL = 300
+
+def _is_cache_valid(cache_key: str) -> bool:
+    """Check if a cache entry is still valid based on TTL."""
+    timestamp_key = f"{cache_key}_timestamp"
+    return (
+        timestamp_key in _db_cache and
+        time.time() - _db_cache[timestamp_key] < CACHE_TTL
+    )
+
+def invalidate_cache(cache_key: Optional[str] = None) -> None:
+    """Invalidate specific or all cache entries."""
+    global _db_cache
+    if cache_key:
+        # Invalidate specific cache entry
+        if cache_key in _db_cache:
+            _db_cache[cache_key] = {} if isinstance(_db_cache[cache_key], dict) else 0
+            _db_cache[f"{cache_key}_timestamp"] = 0
+    else:
+        # Invalidate all cache entries
+        _db_cache = {
+            'settings': {},
+            'settings_timestamp': 0,
+            'devices_count': 0,
+            'devices_timestamp': 0,
+            'alerts_count': {},
+            'alerts_timestamp': 0
+        }
+
+# Device CRUD operations with caching
 def get_devices(db: Session):
     """Retrieve all devices from the database."""
     return db.query(Device).all()
@@ -8,6 +53,29 @@ def get_devices(db: Session):
 def get_device(db: Session, device_id: int):
     """Retrieve a specific device by its ID."""
     return db.query(Device).filter(Device.id == device_id).first()
+
+@lru_cache(maxsize=32)
+def get_device_by_ip(db_session_id: int, ip: str) -> Optional[Dict[str, Any]]:
+    """Retrieve a device by IP address with caching.
+    
+    Args:
+        db_session_id: Unique ID of the session (used for LRU cache key)
+        ip: The IP address to look up
+        
+    Returns:
+        Device data as a dictionary or None if not found
+    """
+    db = Session.object_session(db.query(Device).first())
+    device = db.query(Device).filter(Device.ip == ip).first()
+    if not device:
+        return None
+    return {
+        "id": device.id,
+        "name": device.name,
+        "ip": device.ip,
+        "status": device.status,
+        "type": device.type
+    }
 
 def create_device(db: Session, device_data: dict):
     """Create a new device in the database.
@@ -23,6 +91,7 @@ def create_device(db: Session, device_data: dict):
     db.add(device)
     db.commit()
     db.refresh(device)
+    invalidate_cache('devices_count')
     return device
 
 def update_device(db: Session, device_id: int, device_data: dict):
@@ -59,14 +128,26 @@ def delete_device(db: Session, device_id: int):
     if device:
         db.delete(device)
         db.commit()
+        invalidate_cache('devices_count')
         return True
     return False
 
-# Settings CRUD operations
+# Settings CRUD operations with caching
 def get_all_settings(db: Session):
-    """Retrieve all settings from the database."""
+    """Retrieve all settings from the database with caching."""
+    global _db_cache
+    
+    # Return cached settings if valid
+    if _is_cache_valid('settings'):
+        return _db_cache['settings']
+    
+    # Query database and update cache
     settings = db.query(Setting).all()
-    return {setting.key: setting.value for setting in settings}
+    settings_dict = {setting.key: setting.value for setting in settings}
+    _db_cache['settings'] = settings_dict
+    _db_cache['settings_timestamp'] = time.time()
+    
+    return settings_dict
 
 def get_setting(db: Session, key: str):
     """Retrieve a specific setting by its key.
@@ -78,6 +159,11 @@ def get_setting(db: Session, key: str):
     Returns:
         The setting value or None if not found
     """
+    # First try to get from cache
+    if _is_cache_valid('settings') and key in _db_cache['settings']:
+        return _db_cache['settings'][key]
+    
+    # If not in cache or cache invalid, query database
     setting = db.query(Setting).filter(Setting.key == key).first()
     return setting.value if setting else None
 
@@ -118,6 +204,10 @@ def upsert_setting(db: Session, key: str, value: str, description: str = None):
     
     db.commit()
     db.refresh(setting)
+    
+    # Invalidate settings cache
+    invalidate_cache('settings')
+    
     return setting
 
 def delete_setting(db: Session, key: str):
@@ -134,10 +224,11 @@ def delete_setting(db: Session, key: str):
     if setting:
         db.delete(setting)
         db.commit()
+        invalidate_cache('settings')
         return True
     return False
 
-# Alert CRUD operations
+# Alert CRUD operations with optimized queries
 def get_alerts(db: Session, skip: int = 0, limit: int = 100, status: str = None):
     """
     Retrieve alerts from the database with optional filtering and pagination.
@@ -184,6 +275,7 @@ def create_alert(db: Session, alert_data: dict):
     db.add(alert)
     db.commit()
     db.refresh(alert)
+    invalidate_cache('alerts_count')
     return alert
 
 def update_alert_status(db: Session, alert_id: int, status: str):
@@ -204,6 +296,7 @@ def update_alert_status(db: Session, alert_id: int, status: str):
     alert.status = status
     db.commit()
     db.refresh(alert)
+    invalidate_cache('alerts_count')
     return alert
 
 def delete_alert(db: Session, alert_id: int):
@@ -221,12 +314,13 @@ def delete_alert(db: Session, alert_id: int):
     if alert:
         db.delete(alert)
         db.commit()
+        invalidate_cache('alerts_count')
         return True
     return False
 
 def count_alerts_by_severity(db: Session, status: str = "active"):
     """
-    Count alerts by severity for a given status.
+    Count alerts by severity for a given status with caching.
     
     Args:
         db: Database session
@@ -235,14 +329,64 @@ def count_alerts_by_severity(db: Session, status: str = "active"):
     Returns:
         Dictionary with counts for each severity level
     """
-    query = db.query(Alert).filter(Alert.status == status)
-    critical = query.filter(Alert.severity == "critical").count()
-    warning = query.filter(Alert.severity == "warning").count()
-    info = query.filter(Alert.severity == "info").count()
+    cache_key = f"alerts_count_{status}"
     
-    return {
-        "critical": critical,
-        "warning": warning,
-        "info": info,
-        "total": critical + warning + info
+    # Check if we have a valid cached result
+    if status in _db_cache['alerts_count'] and _is_cache_valid('alerts_count'):
+        return _db_cache['alerts_count'][status]
+    
+    # Perform optimized query to count by severity in one database hit
+    query = db.query(
+        Alert.severity,
+        func.count(Alert.id).label('count')
+    ).filter(
+        Alert.status == status
+    ).group_by(
+        Alert.severity
+    )
+    
+    # Convert query results to a dictionary
+    counts = {
+        "critical": 0,
+        "warning": 0,
+        "info": 0,
+        "total": 0
     }
+    
+    for severity, count in query:
+        if severity in counts:
+            counts[severity] = count
+        counts["total"] += count
+    
+    # Cache the result
+    if 'alerts_count' not in _db_cache:
+        _db_cache['alerts_count'] = {}
+    _db_cache['alerts_count'][status] = counts
+    _db_cache['alerts_timestamp'] = time.time()
+    
+    return counts
+
+def get_device_with_related_alerts(db: Session, device_id: int, alert_limit: int = 5):
+    """
+    Retrieve a device with its most recent related alerts in one efficient query.
+    
+    Args:
+        db: Database session
+        device_id: The device ID to retrieve
+        alert_limit: Maximum number of alerts to include
+        
+    Returns:
+        Tuple of (device, alerts) or (None, []) if device not found
+    """
+    device = get_device(db, device_id)
+    if not device:
+        return None, []
+    
+    # Get related alerts in a separate efficient query
+    alerts = db.query(Alert).filter(
+        Alert.device_id == device_id
+    ).order_by(
+        Alert.timestamp.desc()
+    ).limit(alert_limit).all()
+    
+    return device, alerts

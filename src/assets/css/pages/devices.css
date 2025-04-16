@@ -170,7 +170,7 @@ tr:last-child td {
     height: 2rem;
     padding: 0;
     border: none;
-    border-radius: 50%;
+    border-radius: 100%;
     font-size: 1.25rem;
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -181,7 +181,7 @@ tr:last-child td {
     content: attr(data-tooltip);
     position: absolute;
     bottom: 100%;
-    left: 50%;
+    left: 100%;
     transform: translateX(-50%);
     margin-bottom: 0.5rem;
     padding: 0.25rem 0.5rem;

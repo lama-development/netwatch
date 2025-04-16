@@ -192,11 +192,9 @@ tr:last-child td {
     border-bottom: none;
 }
 
-/* Alert Severity Badges */
 .alert-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    border-radius: 3px;
     font-size: 0.75rem;
     font-weight: var(--font-semibold);
     text-align: center;
@@ -232,7 +230,7 @@ tr:last-child td {
     width: 2rem;
     height: 2rem;
     border: none;
-    border-radius: 50%;
+    border-radius: 100%;
     font-size: 1rem;
     cursor: pointer;
     transition: opacity 0.2s ease;
@@ -485,7 +483,6 @@ fieldset legend {
     border: 1px solid var(--color-hover);
     width: 90%;
     max-width: 600px;
-    border-radius: 4px;
     overflow: hidden;
 }
 

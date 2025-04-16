@@ -7,12 +7,17 @@ document.addEventListener("DOMContentLoaded", function() {
     const alertsTableBody = document.getElementById("alerts-table-body");
     const noAlertsMessage = document.getElementById("no-alerts-message");
     const paginationContainer = document.getElementById("pagination");
-    const refreshButton = document.getElementById("refresh-alerts");
     const filterSeverity = document.getElementById("filter-severity");
     const filterStatus = document.getElementById("filter-status");
     const alertModal = document.getElementById("alert-modal");
-    const closeModal = document.querySelector(".close-modal");
     const alertSettingsForm = document.getElementById("alert-settings-form");
+
+    // Gestore specifico per il pulsante di chiusura del modale
+    document.querySelector(".close-modal").addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Evita la propagazione dell'evento
+        document.getElementById("alert-modal").classList.remove("show");
+    });
 
     // State management
     let allAlerts = []; // Will store all alerts
@@ -20,22 +25,42 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentPage = 1;
     const itemsPerPage = 10;
     let currentAlertId = null;
-    
+    // Dashboard summary counts
+    let summary = {
+        total: 0,
+        critical: 0,
+        warning: 0,
+        info: 0
+    };
     // Sorting state
     let currentSortColumn = "timestamp";
     let currentSortDirection = -1; // -1: descending (newest first), 1: ascending
+    // Flag to track if alerts are loading for the first time
+    let isInitialLoad = true;
 
     // Load alerts on page load
     loadAlerts();
+    
+    // Set up automatic refresh interval (every 30 seconds)
+    setInterval(loadAlerts, 30000);
     
     // Load settings on page load
     loadSettings();
 
     // Event listeners
-    refreshButton.addEventListener("click", loadAlerts);
     filterSeverity.addEventListener("change", applyFilters);
     filterStatus.addEventListener("change", applyFilters);
-    closeModal.addEventListener("click", () => alertModal.classList.remove("show"));
+    
+    // Also close modal when clicking outside of the modal content
+    if (alertModal) {
+        alertModal.addEventListener("click", (event) => {
+            // Close only if clicking on the background, not the modal content
+            if (event.target === alertModal) {
+                alertModal.classList.remove("show");
+            }
+        });
+    }
+    
     alertSettingsForm.addEventListener("submit", saveSettings);
     
     document.getElementById("acknowledge-alert").addEventListener("click", async () => {
@@ -47,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("resolve-alert").addEventListener("click", async () => {
         await resolveAlert(currentAlertId);
         alertModal.classList.remove("show");
-        loadAlerts();
     });
 
     // Load alerts from the API
@@ -59,13 +83,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 throw new Error("Failed to fetch alert summary");
             }
             
-            const summary = await summaryResponse.json();
+            const summaryData = await summaryResponse.json();
+            summary = summaryData; // Store the full summary object
             
             // Update the counts in the UI
-            totalAlertsElement.textContent = summary.total;
-            criticalCountElement.textContent = summary.critical;
-            warningCountElement.textContent = summary.warning;
-            infoCountElement.textContent = summary.info;
+            updateDashboardCounts();
             
             // Get the selected status filter
             const statusFilter = filterStatus.value;
@@ -74,6 +96,9 @@ document.addEventListener("DOMContentLoaded", function() {
             // Add status filter to API call if needed
             if (statusFilter !== "all") {
                 apiUrl += `?status=${statusFilter}`;
+            } else {
+                // Explicitly exclude resolved alerts
+                apiUrl += "?exclude_resolved=true";
             }
             
             // Fetch all alerts
@@ -83,17 +108,28 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
             const data = await alertsResponse.json();
-            allAlerts = data.alerts;
+            allAlerts = data.alerts || [];
             
             // Apply any active filters
             applyFilters();
             
-            // Show success message
-            showPopup("Alerts refreshed successfully");
+            // Show success message only on first load or on explicit refresh action
+            if (isInitialLoad) {
+                isInitialLoad = false;
+                // No need to show a popup on initial load
+            }
         } catch (error) {
             console.error("Error loading alerts:", error);
             showPopup("Error loading alerts. Please try again.", "error");
         }
+    }
+    
+    // Update dashboard counts
+    function updateDashboardCounts() {
+        totalAlertsElement.textContent = summary.total || "0";
+        criticalCountElement.textContent = summary.critical || "0";
+        warningCountElement.textContent = summary.warning || "0";
+        infoCountElement.textContent = summary.info || "0";
     }
     
     // In a real application, this would fetch settings from the API
@@ -144,10 +180,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // Apply filters to the alerts list
     function applyFilters() {
         const severityFilter = filterSeverity.value;
+        const statusFilter = filterStatus.value;
         
         filteredAlerts = allAlerts.filter(alert => {
             // Apply severity filter
             if (severityFilter !== "all" && alert.severity !== severityFilter) {
+                return false;
+            }
+            
+            // Apply status filter if not "all"
+            if (statusFilter !== "all" && alert.status !== statusFilter) {
                 return false;
             }
             
@@ -235,7 +277,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 button.addEventListener("click", async function() {
                     const alertId = parseInt(this.getAttribute("data-id"));
                     await resolveAlert(alertId);
-                    loadAlerts();
                 });
             });
             
@@ -299,6 +340,13 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Show success message
             showPopup("Alert acknowledged successfully");
+            
+            // Update the local alert in our list so we don't need to reload
+            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
+            if (alertIndex !== -1) {
+                allAlerts[alertIndex].status = "acknowledged";
+                applyFilters();
+            }
         } catch (error) {
             console.error("Error acknowledging alert:", error);
             showPopup("Error acknowledging alert. Please try again.", "error");
@@ -308,23 +356,43 @@ document.addEventListener("DOMContentLoaded", function() {
     // Handle resolving an alert
     async function resolveAlert(alertId) {
         try {
-            // Call the API to resolve the alert
+            // Find the alert to identify its severity
+            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
+            if (alertIndex === -1) {
+                throw new Error("Alert not found");
+            }
+            
+            const alertToResolve = allAlerts[alertIndex];
+            
+            // Call the API to resolve the alert with persistent flag
             const response = await fetch(`/api/alerts/${alertId}/resolve`, {
-                method: "PUT"
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    permanent: true
+                })
             });
             
             if (!response.ok) {
                 throw new Error("Failed to resolve alert");
             }
             
+            // Update summary counts based on the severity of the resolved alert
+            if (summary.total > 0) summary.total--;
+            if (alertToResolve.severity === "critical" && summary.critical > 0) summary.critical--;
+            if (alertToResolve.severity === "warning" && summary.warning > 0) summary.warning--;
+            if (alertToResolve.severity === "info" && summary.info > 0) summary.info--;
+            
+            // Update the dashboard counts immediately
+            updateDashboardCounts();
+            
             // Remove the alert from the allAlerts array
-            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
-            if (alertIndex !== -1) {
-                allAlerts.splice(alertIndex, 1);
-                
-                // Update the filtered alerts and re-render
-                applyFilters();
-            }
+            allAlerts.splice(alertIndex, 1);
+            
+            // Update the filtered alerts and re-render
+            applyFilters();
             
             // Show success message
             showPopup("Alert resolved successfully");
@@ -371,7 +439,6 @@ document.addEventListener("DOMContentLoaded", function() {
         paginationContainer.appendChild(nextButton);
     }
     
-    // Set up sorting on table headers
     document.querySelectorAll("thead th[data-sort]").forEach(th => {
         th.addEventListener("click", function() {
             const sortKey = this.getAttribute("data-sort");

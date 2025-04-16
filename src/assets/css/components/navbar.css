@@ -56,7 +56,7 @@
 
 .navbar-profile {
     border: 1px solid var(--color-hover);
-    border-radius: 50%;
+    border-radius: 100%;
 }
 
 /* Sistema di notifica */
@@ -71,7 +71,7 @@
     width: 10px;
     height: 10px;
     background-color: #dc3545;
-    border-radius: 50%;
+    border-radius: 100%;
     display: none;
 }
 
@@ -86,7 +86,6 @@
     width: 300px;
     background-color: var(--color-bg);
     border: 1px solid var(--color-hover);
-    border-radius: 4px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
     display: none;
     z-index: 50;
@@ -154,7 +153,6 @@
 
 .notification-list::-webkit-scrollbar-thumb {
     background-color: var(--color-hover);
-    border-radius: 10px;
 }
 
 .notification-item {
