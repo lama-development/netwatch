@@ -5,7 +5,7 @@ import logging
 import threading
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 # Third-party imports
 from fastapi import FastAPI, Request, Depends, HTTPException
@@ -28,7 +28,6 @@ from app.db import models, crud
 LOG_DIR = "logs"
 LOG_FILE = os.path.join(LOG_DIR, "netwatch.log")
 TEMPLATES_DIR = os.path.join("src", "app", "templates")
-SETTINGS_FILE = os.path.join("src", "config", "settings.json")
 
 # Initialize Jinja2 templates for HTML rendering
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
@@ -43,7 +42,7 @@ shutdown_event = threading.Event()
 def setup_logger() -> None:
     """
     Configure the logging system for the application.
-    Loads settings from a JSON file, ensures the logs directory exists,
+    Loads settings from the database, ensures the logs directory exists,
     clears the previous log file, and sets up logging handlers.
     """
     settings = load_settings()
@@ -174,6 +173,18 @@ class DeviceCreate(BaseModel):
     custom_alerts: Optional[List[str]] = []
 
 
+class AlertResponse(BaseModel):
+    id: int
+    device_id: int
+    device_name: str
+    timestamp: str
+    severity: str
+    type: str
+    message: str
+    description: Optional[str] = None
+    status: str
+
+
 # ---------------------------------------------------------------------------
 # Template Endpoints (View Components)
 # ---------------------------------------------------------------------------
@@ -228,32 +239,50 @@ async def settings_page(request: Request):
     return templates.TemplateResponse("pages/settings.html", {"request": request})
 
 
+@app.get("/alerts", response_class=HTMLResponse)
+async def alerts_page(request: Request):
+    """
+    Render the alerts management page.
+    """
+    return templates.TemplateResponse("pages/alerts.html", {"request": request})
+
+
 # ---------------------------------------------------------------------------
 # API Endpoints
 # ---------------------------------------------------------------------------
 @app.get("/api/settings")
-async def get_api_settings():
+async def get_api_settings(db: Session = Depends(get_db)):
     """
-    Retrieve application settings from the settings JSON file.
+    Retrieve application settings from the database.
     """
     try:
-        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-            settings_data = json.load(f)
+        settings_data = crud.get_all_settings(db)
+        if not settings_data:
+            # If no settings exist, load defaults
+            settings_data = load_settings()
         return settings_data
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Settings file not found")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Error decoding settings file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving settings: {str(e)}")
 
 
 @app.post("/api/settings")
-async def update_api_settings(settings: Settings):
+async def update_api_settings(settings: Settings, db: Session = Depends(get_db)):
     """
-    Update application settings and save them to the settings JSON file.
+    Update application settings in the database.
     """
-    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(settings.dict(), f, indent=4)
-    return {"message": "Settings updated successfully"}
+    try:
+        # Get descriptions from existing settings if available
+        existing_settings = db.query(models.Setting).all()
+        descriptions = {s.key: s.description for s in existing_settings}
+        
+        # Update each setting in the database
+        for key, value in settings.dict().items():
+            description = descriptions.get(key, "")
+            crud.upsert_setting(db, key, str(value), description)
+        
+        return {"message": "Settings updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating settings: {str(e)}")
 
 
 @app.get("/api/devices")
@@ -352,3 +381,84 @@ async def stream_device_status():
             await asyncio.sleep(5)  # Update every 5 seconds
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.get("/api/alerts")
+def get_api_alerts(
+    skip: int = 0, 
+    limit: int = 100, 
+    status: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve alerts with optional filtering and pagination.
+    """
+    try:
+        alerts = crud.get_alerts(db, skip=skip, limit=limit, status=status)
+        
+        # Format the alerts with device names
+        result = []
+        for alert in alerts:
+            # Get the device name
+            device = crud.get_device(db, alert.device_id)
+            device_name = device.name if device else "Unknown Device"
+            
+            # Format the timestamp
+            timestamp = alert.timestamp.isoformat() if alert.timestamp else None
+            
+            result.append({
+                "id": alert.id,
+                "device_id": alert.device_id,
+                "device_name": device_name,
+                "timestamp": timestamp,
+                "severity": alert.severity,
+                "type": alert.type,
+                "message": alert.message,
+                "description": alert.description,
+                "status": alert.status
+            })
+        
+        return {"alerts": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving alerts: {str(e)}")
+
+@app.get("/api/alerts/summary")
+def get_alerts_summary(db: Session = Depends(get_db)):
+    """
+    Get a summary of active alerts by severity.
+    """
+    try:
+        summary = crud.count_alerts_by_severity(db, status="active")
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving alert summary: {str(e)}")
+
+@app.put("/api/alerts/{alert_id}/acknowledge")
+def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
+    """
+    Acknowledge an alert.
+    """
+    try:
+        updated_alert = crud.update_alert_status(db, alert_id, "acknowledged")
+        if not updated_alert:
+            raise HTTPException(status_code=404, detail="Alert not found")
+        return {"message": "Alert acknowledged successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error acknowledging alert: {str(e)}")
+
+@app.put("/api/alerts/{alert_id}/resolve")
+def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
+    """
+    Resolve an alert.
+    """
+    try:
+        updated_alert = crud.update_alert_status(db, alert_id, "resolved")
+        if not updated_alert:
+            raise HTTPException(status_code=404, detail="Alert not found")
+        return {"message": "Alert resolved successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resolving alert: {str(e)}")

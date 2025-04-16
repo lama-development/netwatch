@@ -7,7 +7,25 @@
     </div>
     <div class="navbar-content">
         <i class='bx bx-sun' id="theme"></i>
-        <i class='bx bx-bell'></i>
+        <div class="notification-container">
+            <i class='bx bx-bell' id="notifications-bell"></i>
+            <span class="notification-badge" id="notification-badge"></span>
+            <div class="notification-dropdown" id="notification-dropdown">
+                <div class="notification-header">
+                    <h3>Notifiche</h3>
+                    <button id="mark-all-read">
+                        <i class='bx bx-check-double'></i> <span>Segna tutte come lette</span>
+                    </button>
+                </div>
+                <div class="notification-list" id="notification-list">
+                    <!-- Le notifiche verranno inserite qui dinamicamente -->
+                    <div class="empty-notification">Nessuna notifica</div>
+                </div>
+                <div class="notification-footer">
+                    <a href="/alerts" class="view-all">Vedi tutti gli alert</a>
+                </div>
+            </div>
+        </div>
         <img src="/static/img/user.png" alt="profile image" class="navbar-profile" />
     </div>
 </nav>
