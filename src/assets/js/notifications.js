@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let notifications = [];
     let isOnAlertsPage = window.location.pathname === '/alerts';
     let hasUnreadNotifications = false;
+    let eventsInitialized = false;
 
     // Chiave per localStorage
     const VIEWED_ALERTS_KEY = 'netwatch_viewed_alerts';
@@ -17,45 +18,129 @@ document.addEventListener("DOMContentLoaded", function() {
     // Inizializza
     init();
 
-    // Gestione degli eventi
-    notificationBell.addEventListener('click', toggleNotificationsDropdown);
-    markAllReadBtn.addEventListener('click', markAllAsRead);
+    // Configura Server-Sent Events per gli alert in tempo reale
+    let alertsEventSource = null;
     
-    // Click fuori dal dropdown per chiuderlo
-    document.addEventListener('click', function(event) {
-        const isClickInside = notificationBell.contains(event.target) || 
-                             notificationDropdown.contains(event.target);
-        
-        if (!isClickInside && notificationDropdown.classList.contains('show')) {
-            notificationDropdown.classList.remove('show');
+    function setupSSE() {
+        // Chiudi la connessione esistente se presente
+        if (alertsEventSource) {
+            alertsEventSource.close();
         }
-    });
+        
+        // Crea una nuova connessione SSE
+        alertsEventSource = new EventSource('/stream/alerts');
+        
+        alertsEventSource.onopen = function() {
+            console.log("Connessione SSE stabilita");
+        };
+        
+        alertsEventSource.onerror = function(e) {
+            console.error("Errore nella connessione SSE:", e);
+            // Riprova a connetterti dopo 5 secondi
+            setTimeout(setupSSE, 5000);
+        };
+        
+        alertsEventSource.onmessage = function(event) {
+            try {
+                const newAlerts = JSON.parse(event.data);
+                if (newAlerts && newAlerts.length > 0) {
+                    console.log("Ricevuti nuovi alert in tempo reale:", newAlerts);
+                    
+                    // Forza il pallino rosso a mostrarsi immediatamente
+                    hasUnreadNotifications = true;
+                    updateNotificationBadge();
+                    
+                    // Ricarica immediatamente le notifiche
+                    fetchNotifications();
+                    
+                    // Mostra una notifica temporanea
+                    showSystemNotification("Nuovo alert", "È stato rilevato un nuovo alert nel sistema.");
+                }
+            } catch (e) {
+                console.error("Errore durante l'elaborazione degli alert in tempo reale:", e);
+            }
+        };
+    }
+    
+    // Funzione per mostrare notifiche di sistema (browser)
+    function showSystemNotification(title, body) {
+        // Verifica che le notifiche del browser siano supportate
+        if (!("Notification" in window)) {
+            return;
+        }
+        
+        // Verifica il permesso per le notifiche
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: body, icon: '/static/img/netwatch.png' });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification(title, { body: body, icon: '/static/img/netwatch.png' });
+                }
+            });
+        }
+    }
+
+    // Gestione degli eventi
+    function setupEventListeners() {
+        if (eventsInitialized) return;
+        
+        notificationBell.addEventListener('click', toggleNotificationsDropdown);
+        markAllReadBtn.addEventListener('click', markAllAsRead);
+        
+        // Click fuori dal dropdown per chiuderlo
+        document.addEventListener('click', function(event) {
+            const isClickInside = notificationBell.contains(event.target) || 
+                                notificationDropdown.contains(event.target);
+            
+            if (!isClickInside && notificationDropdown.classList.contains('show')) {
+                notificationDropdown.classList.remove('show');
+            }
+        });
+        
+        eventsInitialized = true;
+    }
 
     // Funzione di inizializzazione
     function init() {
+        console.log("Inizializzazione del sistema di notifiche...");
+        
+        // Aggiorna lo stato della pagina corrente
+        isOnAlertsPage = window.location.pathname === '/alerts';
+        
+        // Configura gli event listener
+        setupEventListeners();
+        
         // Se siamo nella pagina degli alert, segna tutti gli alert come letti
         if (isOnAlertsPage) {
             markAllAsRead();
         }
         
+        // Configura la connessione eventi in tempo reale
+        setupSSE();
+        
         // Carica le notifiche
         fetchNotifications();
         
-        // Aggiorna le notifiche ogni 30 secondi
-        setInterval(fetchNotifications, 30000);
+        // Aggiorna le notifiche ogni 15 secondi (intervallo ridotto)
+        setInterval(fetchNotifications, 15000);
     }
 
     // Funzione per caricare le notifiche
     async function fetchNotifications() {
         try {
-            // Carica solo gli alert attivi e recenti (ultimi 7 giorni)
-            const response = await fetch('/api/alerts?status=active&limit=5');
+            console.log("Recupero notifiche dal server...");
+            
+            // Carica solo gli alert attivi e recenti
+            const response = await fetch('/api/alerts?status=active&limit=10');
             if (!response.ok) {
                 throw new Error('Errore nel caricamento delle notifiche');
             }
             
             const data = await response.json();
             notifications = data.alerts || [];
+            
+            console.log("Notifiche caricate:", notifications.length);
             
             // Aggiorna l'interfaccia
             updateNotificationUI();
@@ -66,6 +151,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Funzione per aggiornare l'interfaccia delle notifiche
     function updateNotificationUI() {
+        console.log("Aggiornamento UI delle notifiche...");
+        
         // Svuota la lista delle notifiche
         notificationList.innerHTML = '';
         
@@ -73,17 +160,28 @@ document.addEventListener("DOMContentLoaded", function() {
         const viewedAlerts = getViewedAlerts();
         
         // Verifica se ci sono notifiche non lette
-        hasUnreadNotifications = notifications.some(notification => 
+        const foundUnread = notifications.some(notification => 
             !viewedAlerts.includes(notification.id));
         
         // Se siamo nella pagina degli alert, segna tutto come letto
-        if (isOnAlertsPage && hasUnreadNotifications) {
-            markAllAsRead();
+        if (isOnAlertsPage) {
+            console.log("Ci troviamo nella pagina alert, segno tutti gli alert come letti");
+            // Salva gli ID per marcarli come letti, ma non rimuovere la lista
+            const alertIds = notifications.map(alert => alert.id);
+            if (alertIds.length > 0) {
+                setViewedAlerts([...new Set([...getViewedAlerts(), ...alertIds])]);
+            }
             hasUnreadNotifications = false;
+        } else {
+            // Aggiorna lo stato delle notifiche non lette solo se non siamo nella pagina degli alert
+            hasUnreadNotifications = foundUnread;
         }
         
-        // Aggiorna il badge di notifica
+        // Aggiorna il badge in base allo stato
         updateNotificationBadge();
+        
+        console.log("Notifiche non lette:", hasUnreadNotifications);
+        console.log("Numero totale di notifiche:", notifications.length);
         
         // Se non ci sono notifiche, mostra messaggio vuoto
         if (notifications.length === 0) {
@@ -103,6 +201,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function createNotificationItem(notification, isUnread) {
         const li = document.createElement('li');
         li.className = 'notification-item' + (isUnread ? ' unread' : '');
+        li.dataset.id = notification.id; // Aggiungi l'ID come attributo data per facile riferimento
         
         // Formatta la data
         const timestamp = new Date(notification.timestamp);
@@ -133,10 +232,27 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
         
-        // Aggiungi event listener
-        li.addEventListener('click', () => {
-            markAsRead(notification.id);
-            window.location.href = `/alerts?id=${notification.id}`;
+        // Gestisci il click sulla notifica
+        li.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const alertId = notification.id;
+            console.log("Click su notifica:", alertId);
+            
+            // Rimuovi la notifica dall'array e aggiorna UI prima della navigazione
+            notifications = notifications.filter(n => n.id !== alertId);
+            
+            // Marca come letta
+            markAsRead(alertId);
+            
+            // Chiudi il dropdown
+            notificationDropdown.classList.remove('show');
+            
+            // Naviga alla pagina alert con un breve ritardo
+            setTimeout(() => {
+                window.location.href = `/alerts?id=${alertId}`;
+            }, 100);
         });
         
         return li;
@@ -171,38 +287,82 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Funzione per ottenere gli alert già visualizzati
     function getViewedAlerts() {
-        const viewed = localStorage.getItem(VIEWED_ALERTS_KEY);
-        return viewed ? JSON.parse(viewed) : [];
+        try {
+            const viewed = localStorage.getItem(VIEWED_ALERTS_KEY);
+            return viewed ? JSON.parse(viewed) : [];
+        } catch (e) {
+            console.error("Errore nel recupero degli alert visualizzati:", e);
+            return [];
+        }
     }
 
     // Funzione per impostare gli alert visualizzati
     function setViewedAlerts(alertIds) {
-        localStorage.setItem(VIEWED_ALERTS_KEY, JSON.stringify(alertIds));
+        try {
+            localStorage.setItem(VIEWED_ALERTS_KEY, JSON.stringify(alertIds));
+        } catch (e) {
+            console.error("Errore nel salvataggio degli alert visualizzati:", e);
+        }
     }
 
     // Funzione per segnare un alert come letto
     function markAsRead(alertId) {
-        const viewedAlerts = getViewedAlerts();
-        if (!viewedAlerts.includes(alertId)) {
-            viewedAlerts.push(alertId);
-            setViewedAlerts(viewedAlerts);
+        console.log("Marcando come letto l'alert:", alertId);
+        
+        try {
+            const viewedAlerts = getViewedAlerts();
             
-            // Aggiorna l'interfaccia
+            // Aggiungi l'ID alla lista solo se non è già presente
+            if (!viewedAlerts.includes(alertId)) {
+                viewedAlerts.push(alertId);
+                setViewedAlerts(viewedAlerts);
+            }
+            
+            // Aggiorna lo stato di hasUnreadNotifications
+            updateUnreadState();
+            
+            // Aggiorna l'interfaccia delle notifiche
             updateNotificationUI();
+        } catch (e) {
+            console.error("Errore nel marcare l'alert come letto:", e);
         }
+    }
+    
+    // Funzione per aggiornare lo stato di hasUnreadNotifications
+    function updateUnreadState() {
+        const viewedAlerts = getViewedAlerts();
+        hasUnreadNotifications = notifications.some(notification => 
+            !viewedAlerts.includes(notification.id));
+        
+        updateNotificationBadge();
     }
 
     // Funzione per segnare tutti gli alert come letti
     function markAllAsRead() {
-        const alertIds = notifications.map(alert => alert.id);
-        setViewedAlerts([...getViewedAlerts(), ...alertIds]);
+        console.log("Marcando tutti gli alert come letti");
         
-        // Svuota la lista delle notifiche - mostrando il messaggio "Nessuna notifica"
-        notificationList.innerHTML = '<div class="empty-notification">Nessuna notifica</div>';
+        if (notifications.length === 0) {
+            return;
+        }
         
-        // Aggiorna l'interfaccia rimuovendo il badge
-        hasUnreadNotifications = false;
-        updateNotificationBadge();
+        try {
+            // Ottieni tutti gli ID degli alert e aggiungili alla lista dei visualizzati
+            const alertIds = notifications.map(alert => alert.id);
+            const viewedAlerts = getViewedAlerts();
+            
+            // Usa Set per rimuovere duplicati
+            const newViewedAlerts = [...new Set([...viewedAlerts, ...alertIds])];
+            setViewedAlerts(newViewedAlerts);
+            
+            // Aggiorna UI
+            hasUnreadNotifications = false;
+            updateNotificationBadge();
+            
+            // Aggiorna la lista
+            notificationList.innerHTML = '<div class="empty-notification">Nessuna notifica non letta</div>';
+        } catch (e) {
+            console.error("Errore nel marcare tutti gli alert come letti:", e);
+        }
     }
 
     // Funzione per aggiornare il badge delle notifiche
@@ -216,7 +376,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Funzione per aprire/chiudere il dropdown delle notifiche
     function toggleNotificationsDropdown(event) {
+        event.preventDefault();
         event.stopPropagation();
+        
+        const isOpen = notificationDropdown.classList.contains('show');
+        
+        if (!isOpen) {
+            // Se stiamo aprendo, forza un aggiornamento delle notifiche
+            fetchNotifications();
+        }
+        
         notificationDropdown.classList.toggle('show');
     }
+    
+    // Esporta funzioni per test e debug
+    window.netwatch = window.netwatch || {};
+    window.netwatch.notifications = {
+        fetchNotifications,
+        updateNotificationUI,
+        markAllAsRead,
+        getViewedAlerts
+    };
 });

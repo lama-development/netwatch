@@ -5,12 +5,19 @@ document.addEventListener("DOMContentLoaded", function() {
     const warningCountElement = document.querySelector("#level-warning .level-count");
     const infoCountElement = document.querySelector("#level-info .level-count");
     const alertsTableBody = document.getElementById("alerts-table-body");
+    const historyTableBody = document.getElementById("history-table-body");
     const noAlertsMessage = document.getElementById("no-alerts-message");
+    const noHistoryMessage = document.getElementById("no-history-message");
     const paginationContainer = document.getElementById("pagination");
+    const historyPaginationContainer = document.getElementById("history-pagination");
     const filterSeverity = document.getElementById("filter-severity");
-    const filterStatus = document.getElementById("filter-status");
+    const historySeverity = document.getElementById("history-severity");
+    const historyDays = document.getElementById("history-days");
     const alertModal = document.getElementById("alert-modal");
-    const alertSettingsForm = document.getElementById("alert-settings-form");
+    const activeAlertsBtn = document.getElementById("active-alerts-btn");
+    const alertHistoryBtn = document.getElementById("alert-history-btn");
+    const activeAlertsSection = document.getElementById("active-alerts-section");
+    const alertHistorySection = document.getElementById("alert-history-section");
 
     // Gestore specifico per il pulsante di chiusura del modale
     document.querySelector(".close-modal").addEventListener("click", function(e) {
@@ -20,11 +27,16 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // State management
-    let allAlerts = []; // Will store all alerts
-    let filteredAlerts = []; // Will store filtered alerts
+    let allAlerts = []; // Will store all active alerts
+    let historyAlerts = []; // Will store historic alerts
+    let filteredAlerts = []; // Will store filtered active alerts
+    let filteredHistory = []; // Will store filtered history alerts
     let currentPage = 1;
+    let historyPage = 1;
     const itemsPerPage = 10;
     let currentAlertId = null;
+    let currentView = "active"; // 'active' or 'history'
+    
     // Dashboard summary counts
     let summary = {
         total: 0,
@@ -32,9 +44,13 @@ document.addEventListener("DOMContentLoaded", function() {
         warning: 0,
         info: 0
     };
+    
     // Sorting state
     let currentSortColumn = "timestamp";
     let currentSortDirection = -1; // -1: descending (newest first), 1: ascending
+    let historySortColumn = "timestamp";
+    let historySortDirection = -1;
+    
     // Flag to track if alerts are loading for the first time
     let isInitialLoad = true;
 
@@ -43,13 +59,29 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Set up automatic refresh interval (every 30 seconds)
     setInterval(loadAlerts, 30000);
-    
-    // Load settings on page load
-    loadSettings();
 
-    // Event listeners
-    filterSeverity.addEventListener("change", applyFilters);
-    filterStatus.addEventListener("change", applyFilters);
+    // Event listeners for view switching
+    activeAlertsBtn.addEventListener("click", function() {
+        switchView("active");
+    });
+    
+    alertHistoryBtn.addEventListener("click", function() {
+        switchView("history");
+        loadAlertHistory(); // Load history data when switching to that view
+    });
+
+    // Event listeners for filters
+    filterSeverity.addEventListener("change", function() {
+        applyFilters("active");
+    });
+    
+    historySeverity.addEventListener("change", function() {
+        applyFilters("history");
+    });
+    
+    historyDays.addEventListener("change", function() {
+        loadAlertHistory(); // Reload history with new time frame
+    });
     
     // Also close modal when clicking outside of the modal content
     if (alertModal) {
@@ -60,21 +92,25 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-    
-    alertSettingsForm.addEventListener("submit", saveSettings);
-    
-    document.getElementById("acknowledge-alert").addEventListener("click", async () => {
-        await acknowledgeAlert(currentAlertId);
-        alertModal.classList.remove("show");
-        loadAlerts();
-    });
-    
-    document.getElementById("resolve-alert").addEventListener("click", async () => {
-        await resolveAlert(currentAlertId);
-        alertModal.classList.remove("show");
-    });
 
-    // Load alerts from the API
+    // Function to switch between active alerts and history views
+    function switchView(view) {
+        currentView = view;
+        
+        if (view === "active") {
+            activeAlertsBtn.classList.add("selected");
+            alertHistoryBtn.classList.remove("selected");
+            activeAlertsSection.classList.remove("hidden");
+            alertHistorySection.classList.add("hidden");
+        } else {
+            activeAlertsBtn.classList.remove("selected");
+            alertHistoryBtn.classList.add("selected");
+            activeAlertsSection.classList.add("hidden");
+            alertHistorySection.classList.remove("hidden");
+        }
+    }
+
+    // Load active alerts from the API
     async function loadAlerts() {
         try {
             // First, fetch the summary for the dashboard counts
@@ -89,19 +125,10 @@ document.addEventListener("DOMContentLoaded", function() {
             // Update the counts in the UI
             updateDashboardCounts();
             
-            // Get the selected status filter
-            const statusFilter = filterStatus.value;
-            let apiUrl = "/api/alerts";
+            // Get active alerts
+            let apiUrl = "/api/alerts?exclude_resolved=true";
             
-            // Add status filter to API call if needed
-            if (statusFilter !== "all") {
-                apiUrl += `?status=${statusFilter}`;
-            } else {
-                // Explicitly exclude resolved alerts
-                apiUrl += "?exclude_resolved=true";
-            }
-            
-            // Fetch all alerts
+            // Fetch all active alerts
             const alertsResponse = await fetch(apiUrl);
             if (!alertsResponse.ok) {
                 throw new Error("Failed to fetch alerts");
@@ -111,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function() {
             allAlerts = data.alerts || [];
             
             // Apply any active filters
-            applyFilters();
+            applyFilters("active");
             
             // Show success message only on first load or on explicit refresh action
             if (isInitialLoad) {
@@ -124,6 +151,30 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
+    // Load alert history from the API
+    async function loadAlertHistory() {
+        try {
+            // Get selected time frame
+            const days = historyDays.value;
+            
+            // Fetch alert history
+            const historyResponse = await fetch(`/api/alerts/history?days=${days}`);
+            if (!historyResponse.ok) {
+                throw new Error("Failed to fetch alert history");
+            }
+            
+            const data = await historyResponse.json();
+            historyAlerts = data.alerts || [];
+            
+            // Apply any active filters
+            applyFilters("history");
+            
+        } catch (error) {
+            console.error("Error loading alert history:", error);
+            showPopup("Error loading alert history. Please try again.", "error");
+        }
+    }
+    
     // Update dashboard counts
     function updateDashboardCounts() {
         totalAlertsElement.textContent = summary.total || "0";
@@ -132,78 +183,44 @@ document.addEventListener("DOMContentLoaded", function() {
         infoCountElement.textContent = summary.info || "0";
     }
     
-    // In a real application, this would fetch settings from the API
-    function loadSettings() {
-        // These would be retrieved from an API in a real application
-        // For now, use default settings
-        const settings = {
-            email_notifications: true,
-            notification_email: "admin@example.com",
-            alert_retention: 30,
-            cpu_threshold: 80,
-            memory_threshold: 80,
-            latency_threshold: 200,
-            packet_loss_threshold: 5
-        };
-        
-        // Populate form fields
-        document.getElementById("email-notifications").checked = settings.email_notifications;
-        document.getElementById("notification-email").value = settings.notification_email;
-        document.getElementById("alert-retention").value = settings.alert_retention;
-        document.getElementById("cpu-threshold").value = settings.cpu_threshold;
-        document.getElementById("memory-threshold").value = settings.memory_threshold;
-        document.getElementById("latency-threshold").value = settings.latency_threshold;
-        document.getElementById("packet-loss-threshold").value = settings.packet_loss_threshold;
-    }
-    
-    // Save settings (in a real app, this would make an API call)
-    function saveSettings(event) {
-        event.preventDefault();
-        
-        const settings = {
-            email_notifications: document.getElementById("email-notifications").checked,
-            notification_email: document.getElementById("notification-email").value,
-            alert_retention: document.getElementById("alert-retention").value,
-            cpu_threshold: document.getElementById("cpu-threshold").value,
-            memory_threshold: document.getElementById("memory-threshold").value,
-            latency_threshold: document.getElementById("latency-threshold").value,
-            packet_loss_threshold: document.getElementById("packet-loss-threshold").value
-        };
-        
-        // In a real application, this would be an API call
-        console.log("Saving settings:", settings);
-        
-        // Show success message
-        showPopup("Alert settings saved successfully");
-    }
-    
     // Apply filters to the alerts list
-    function applyFilters() {
-        const severityFilter = filterSeverity.value;
-        const statusFilter = filterStatus.value;
-        
-        filteredAlerts = allAlerts.filter(alert => {
-            // Apply severity filter
-            if (severityFilter !== "all" && alert.severity !== severityFilter) {
-                return false;
-            }
+    function applyFilters(viewType) {
+        if (viewType === "active") {
+            const severityFilter = filterSeverity.value;
             
-            // Apply status filter if not "all"
-            if (statusFilter !== "all" && alert.status !== statusFilter) {
-                return false;
-            }
+            filteredAlerts = allAlerts.filter(alert => {
+                // Apply severity filter
+                if (severityFilter !== "all" && alert.severity !== severityFilter) {
+                    return false;
+                }
+                return true;
+            });
             
-            return true;
-        });
-        
-        // Reset to first page when filtering
-        currentPage = 1;
-        
-        // Render the filtered and sorted alerts
-        renderAlerts();
+            // Reset to first page when filtering
+            currentPage = 1;
+            
+            // Render the filtered and sorted alerts
+            renderAlerts();
+        } else { // history view
+            const severityFilter = historySeverity.value;
+            
+            filteredHistory = historyAlerts.filter(alert => {
+                // Apply severity filter
+                if (severityFilter !== "all" && alert.severity !== severityFilter) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // Reset to first page when filtering
+            historyPage = 1;
+            
+            // Render the filtered and sorted history
+            renderHistory();
+        }
     }
     
-    // Render alerts in the table
+    // Render active alerts in the table
     function renderAlerts() {
         // Sort alerts if a sort column is selected
         if (currentSortColumn) {
@@ -220,13 +237,17 @@ document.addEventListener("DOMContentLoaded", function() {
         // Clear the table body
         alertsTableBody.innerHTML = "";
         
-        // Show/hide the no alerts message
+        const tableContainer = alertsTableBody.closest('.table-container');
+        
+        // Show/hide the no alerts message and table elements
         if (filteredAlerts.length === 0) {
             noAlertsMessage.classList.remove("hidden");
             paginationContainer.classList.add("hidden");
+            if (tableContainer) tableContainer.classList.add("hidden");
         } else {
             noAlertsMessage.classList.add("hidden");
             paginationContainer.classList.remove("hidden");
+            if (tableContainer) tableContainer.classList.remove("hidden");
             
             // Apply pagination
             const startIndex = (currentPage - 1) * itemsPerPage;
@@ -252,11 +273,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${alert.message}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="detail-button" data-id="${alert.id}" data-tooltip="Dettagli">
+                            <button class="detail-button" data-id="${alert.id}" data-tooltip="Details">
                                 <i class='bx bx-info-circle'></i>
-                            </button>
-                            <button class="resolve-button" data-id="${alert.id}" data-tooltip="Risolvi">
-                                <i class='bx bx-check-double'></i>
                             </button>
                         </div>
                     </td>
@@ -269,177 +287,196 @@ document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll(".detail-button").forEach(button => {
                 button.addEventListener("click", function() {
                     const alertId = parseInt(this.getAttribute("data-id"));
-                    showAlertDetails(alertId);
-                });
-            });
-            
-            document.querySelectorAll(".resolve-button").forEach(button => {
-                button.addEventListener("click", async function() {
-                    const alertId = parseInt(this.getAttribute("data-id"));
-                    await resolveAlert(alertId);
+                    showAlertDetails(alertId, "active");
                 });
             });
             
             // Render pagination
-            renderPagination();
+            renderPagination(filteredAlerts.length, currentPage, paginationContainer, (page) => {
+                currentPage = page;
+                renderAlerts();
+            });
         }
     }
     
-    // Handle clicking on alert details button
-    function showAlertDetails(alertId) {
-        // Find the alert in our data
-        const alert = allAlerts.find(a => a.id === alertId);
-        if (!alert) return;
+    // Render alert history in the table
+    function renderHistory() {
+        // Sort history if a sort column is selected
+        if (historySortColumn) {
+            filteredHistory.sort((a, b) => {
+                const valA = a[historySortColumn];
+                const valB = b[historySortColumn];
+                
+                if (valA < valB) return -1 * historySortDirection;
+                if (valA > valB) return 1 * historySortDirection;
+                return 0;
+            });
+        }
         
-        // Store the current alert ID for modal actions
-        currentAlertId = alertId;
+        // Clear the table body
+        historyTableBody.innerHTML = "";
         
-        // Format the timestamp for display
-        const timestamp = new Date(alert.timestamp);
-        const formattedDateTime = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}`;
+        const tableContainer = historyTableBody.closest('.table-container');
         
-        // Update modal content
-        document.getElementById("modal-device").textContent = alert.device_name;
-        document.getElementById("modal-time").textContent = formattedDateTime;
-        document.getElementById("modal-type").textContent = alert.type;
-        document.getElementById("modal-severity").textContent = alert.severity;
-        document.getElementById("modal-status").textContent = alert.status;
-        document.getElementById("modal-message").textContent = alert.message;
-        document.getElementById("modal-description").textContent = alert.description || "No additional description available.";
-        
-        // Show/hide action buttons based on alert status
-        const acknowledgeButton = document.getElementById("acknowledge-alert");
-        const resolveButton = document.getElementById("resolve-alert");
-        
-        if (alert.status === "active") {
-            acknowledgeButton.style.display = "flex";
-            resolveButton.style.display = "flex";
-        } else if (alert.status === "acknowledged") {
-            acknowledgeButton.style.display = "none";
-            resolveButton.style.display = "flex";
+        // Show/hide the no history message and table elements
+        if (filteredHistory.length === 0) {
+            noHistoryMessage.classList.remove("hidden");
+            historyPaginationContainer.classList.add("hidden");
+            if (tableContainer) tableContainer.classList.add("hidden");
         } else {
-            acknowledgeButton.style.display = "none";
-            resolveButton.style.display = "none";
-        }
-        
-        // Show the modal
-        alertModal.classList.add("show");
-    }
-    
-    // Handle acknowledging an alert
-    async function acknowledgeAlert(alertId) {
-        try {
-            // Call the API to acknowledge the alert
-            const response = await fetch(`/api/alerts/${alertId}/acknowledge`, {
-                method: "PUT"
+            noHistoryMessage.classList.add("hidden");
+            historyPaginationContainer.classList.remove("hidden");
+            if (tableContainer) tableContainer.classList.remove("hidden");
+            
+            // Apply pagination
+            const startIndex = (historyPage - 1) * itemsPerPage;
+            const paginatedHistory = filteredHistory.slice(startIndex, startIndex + itemsPerPage);
+            
+            // Add rows to the table
+            paginatedHistory.forEach(alert => {
+                const row = document.createElement("tr");
+                
+                // Format timestamps
+                const startTime = new Date(alert.timestamp);
+                const formattedStartDate = startTime.toLocaleDateString();
+                const formattedStartTime = startTime.toLocaleTimeString();
+                
+                let formattedEndDate = "-";
+                let formattedEndTime = "";
+                if (alert.resolved_at) {
+                    const endTime = new Date(alert.resolved_at);
+                    formattedEndDate = endTime.toLocaleDateString();
+                    formattedEndTime = endTime.toLocaleTimeString();
+                }
+                
+                // Format duration
+                const duration = alert.duration || "-";
+                
+                // Create a badge for the severity
+                const severityBadge = `<span class="alert-badge ${alert.severity}">${alert.severity}</span>`;
+                
+                // Create a badge for the status
+                const statusClass = alert.status === "resolved" ? "resolved" : "active";
+                const statusBadge = `<span class="status-badge ${statusClass}">${alert.status}</span>`;
+                
+                row.innerHTML = `
+                    <td>${formattedStartDate} ${formattedStartTime}</td>
+                    <td>${formattedEndDate} ${formattedEndTime}</td>
+                    <td>${duration}</td>
+                    <td>${alert.device_name}</td>
+                    <td>${severityBadge}</td>
+                    <td>${alert.type}</td>
+                    <td>${alert.message}</td>
+                    <td>${statusBadge}</td>
+                `;
+                
+                row.addEventListener("click", function() {
+                    showAlertDetails(alert.id, "history");
+                });
+                
+                historyTableBody.appendChild(row);
             });
             
-            if (!response.ok) {
-                throw new Error("Failed to acknowledge alert");
-            }
-            
-            // Show success message
-            showPopup("Alert acknowledged successfully");
-            
-            // Update the local alert in our list so we don't need to reload
-            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
-            if (alertIndex !== -1) {
-                allAlerts[alertIndex].status = "acknowledged";
-                applyFilters();
-            }
-        } catch (error) {
-            console.error("Error acknowledging alert:", error);
-            showPopup("Error acknowledging alert. Please try again.", "error");
+            // Render pagination
+            renderPagination(filteredHistory.length, historyPage, historyPaginationContainer, (page) => {
+                historyPage = page;
+                renderHistory();
+            });
         }
     }
     
-    // Handle resolving an alert
-    async function resolveAlert(alertId) {
+    // Handle clicking on alert details button or row
+    async function showAlertDetails(alertId, viewType) {
         try {
-            // Find the alert to identify its severity
-            const alertIndex = allAlerts.findIndex(alert => alert.id === alertId);
-            if (alertIndex === -1) {
-                throw new Error("Alert not found");
-            }
-            
-            const alertToResolve = allAlerts[alertIndex];
-            
-            // Call the API to resolve the alert with persistent flag
-            const response = await fetch(`/api/alerts/${alertId}/resolve`, {
-                method: "PUT",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    permanent: true
-                })
-            });
-            
+            // Fetch full alert details
+            const response = await fetch(`/api/alerts/${alertId}`);
             if (!response.ok) {
-                throw new Error("Failed to resolve alert");
+                throw new Error("Failed to fetch alert details");
             }
             
-            // Update summary counts based on the severity of the resolved alert
-            if (summary.total > 0) summary.total--;
-            if (alertToResolve.severity === "critical" && summary.critical > 0) summary.critical--;
-            if (alertToResolve.severity === "warning" && summary.warning > 0) summary.warning--;
-            if (alertToResolve.severity === "info" && summary.info > 0) summary.info--;
+            const alertData = await response.json();
+            if (!alertData) {
+                showPopup("Alert not found", "error");
+                return;
+            }
             
-            // Update the dashboard counts immediately
-            updateDashboardCounts();
+            // Store the current alert ID for modal actions
+            currentAlertId = alertId;
             
-            // Remove the alert from the allAlerts array
-            allAlerts.splice(alertIndex, 1);
+            // Format timestamps for display
+            const timestamp = new Date(alertData.timestamp);
+            const formattedDateTime = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}`;
             
-            // Update the filtered alerts and re-render
-            applyFilters();
+            // Update modal content
+            document.getElementById("modal-device").textContent = alertData.device_name;
+            document.getElementById("modal-time").textContent = formattedDateTime;
+            document.getElementById("modal-type").textContent = alertData.type;
+            document.getElementById("modal-severity").textContent = alertData.severity;
+            document.getElementById("modal-status").textContent = alertData.status;
+            document.getElementById("modal-message").textContent = alertData.message;
+            document.getElementById("modal-description").textContent = alertData.description || "No additional description available.";
             
-            // Show success message
-            showPopup("Alert resolved successfully");
+            // Show/hide resolved details
+            const resolvedDetails = document.querySelectorAll(".resolved-detail");
+            if (alertData.status === "resolved" && alertData.resolved_at) {
+                resolvedDetails.forEach(el => el.classList.remove("hidden"));
+                
+                const resolvedTime = new Date(alertData.resolved_at);
+                const formattedResolvedTime = `${resolvedTime.toLocaleDateString()} ${resolvedTime.toLocaleTimeString()}`;
+                
+                document.getElementById("modal-resolved-at").textContent = formattedResolvedTime;
+                document.getElementById("modal-duration").textContent = alertData.duration || "Unknown";
+                document.getElementById("modal-resolution-note").textContent = alertData.resolution_note || "No notes available";
+            } else {
+                resolvedDetails.forEach(el => el.classList.add("hidden"));
+            }
+            
+            // Show the modal
+            alertModal.classList.add("show");
+            
         } catch (error) {
-            console.error("Error resolving alert:", error);
-            showPopup("Error resolving alert. Please try again.", "error");
+            console.error("Error fetching alert details:", error);
+            showPopup("Error fetching alert details", "error");
         }
     }
     
     // Render pagination controls
-    function renderPagination() {
-        if (!paginationContainer) return;
+    function renderPagination(totalItems, currentPageNum, container, callback) {
+        if (!container) return;
         
-        const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
-        paginationContainer.innerHTML = "";
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        container.innerHTML = "";
         
         // Create previous button
         const prevButton = document.createElement("button");
         prevButton.textContent = "Previous";
-        prevButton.disabled = currentPage === 1;
+        prevButton.disabled = currentPageNum === 1;
         prevButton.addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderAlerts();
+            if (currentPageNum > 1) {
+                callback(currentPageNum - 1);
             }
         });
-        paginationContainer.appendChild(prevButton);
+        container.appendChild(prevButton);
         
         // Create page info
         const pageInfo = document.createElement("span");
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
-        paginationContainer.appendChild(pageInfo);
+        pageInfo.textContent = `Page ${currentPageNum} of ${totalPages || 1}`;
+        container.appendChild(pageInfo);
         
         // Create next button
         const nextButton = document.createElement("button");
         nextButton.textContent = "Next";
-        nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        nextButton.disabled = currentPageNum === totalPages || totalPages === 0;
         nextButton.addEventListener("click", () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderAlerts();
+            if (currentPageNum < totalPages) {
+                callback(currentPageNum + 1);
             }
         });
-        paginationContainer.appendChild(nextButton);
+        container.appendChild(nextButton);
     }
     
-    document.querySelectorAll("thead th[data-sort]").forEach(th => {
+    // Add sorting functionality to table headers
+    document.querySelectorAll("#active-alerts-section th[data-sort]").forEach(th => {
         th.addEventListener("click", function() {
             const sortKey = this.getAttribute("data-sort");
             
@@ -448,11 +485,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 currentSortDirection *= -1;
             } else {
                 currentSortColumn = sortKey;
-                currentSortDirection = 1;
+                currentSortDirection = -1; // Default to newest first
             }
             
             // Reset all sort icons to default
-            document.querySelectorAll("thead th[data-sort] i").forEach(icon => {
+            document.querySelectorAll("#active-alerts-section th[data-sort] i").forEach(icon => {
                 icon.className = "bx bx-sort";
             });
             
@@ -463,6 +500,34 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
             renderAlerts();
+        });
+    });
+    
+    // Add sorting functionality to history table headers
+    document.querySelectorAll("#alert-history-section th[data-sort]").forEach(th => {
+        th.addEventListener("click", function() {
+            const sortKey = this.getAttribute("data-sort");
+            
+            // Toggle sort direction or set new sort column
+            if (historySortColumn === sortKey) {
+                historySortDirection *= -1;
+            } else {
+                historySortColumn = sortKey;
+                historySortDirection = -1; // Default to newest first
+            }
+            
+            // Reset all sort icons to default
+            document.querySelectorAll("#alert-history-section th[data-sort] i").forEach(icon => {
+                icon.className = "bx bx-sort";
+            });
+            
+            // Update icon for clicked header
+            const icon = this.querySelector("i");
+            if (icon) {
+                icon.className = historySortDirection === 1 ? "bx bx-sort-up" : "bx bx-sort-down";
+            }
+            
+            renderHistory();
         });
     });
     

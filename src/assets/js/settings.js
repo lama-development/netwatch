@@ -29,38 +29,8 @@ function showPopup(message) {
     }, 3000);
 }
 
-// Function to update a single parameter
-async function updateSetting(param) {
-    try {
-        // Get the new value from the input
-        const input = document.getElementById(param);
-        const newValue = input.value;
-
-        // Get current settings
-        const response = await fetch("/api/settings");
-        const settings = await response.json();
-
-        // Update only the specified parameter
-        settings[param] = newValue;
-
-        // Send updated settings to the server
-        const updateResp = await fetch("/api/settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(settings)
-        });
-        const result = await updateResp.json();
-        console.log(result);
-
-        // Show success popup
-        showPopup("Settings updated successfully");
-    } catch (error) {
-        console.error("Error updating setting:", error);
-    }
-}
-
-// Function to save all changes at once
-async function saveAll() {
+// Function to save all settings and refresh monitoring
+async function saveAllAndRefresh() {
     try {
         const settings = {
             ping_timeout: document.getElementById("ping_timeout").value,
@@ -68,6 +38,9 @@ async function saveAll() {
             check_interval: document.getElementById("check_interval").value,
             retry_interval: document.getElementById("retry_interval").value,
             max_retries: document.getElementById("max_retries").value,
+            parallel_pings: true, // Keeping default values for these
+            ping_count: 3,
+            cache_ttl: 300
         };
 
         const response = await fetch("/api/settings", {
@@ -78,10 +51,64 @@ async function saveAll() {
         const result = await response.json();
         console.log(result);
 
+        // Force refresh of monitoring by restarting the monitoring cycle
+        const refreshResponse = await fetch("/api/refresh_monitoring", {
+            method: "POST"
+        }).catch(err => {
+            console.log("Monitoring refresh not available, will refresh on next cycle");
+        });
+
         // Show success popup
-        showPopup("Settings updated successfully");
+        showPopup("Settings saved and monitoring refreshed");
     } catch (error) {
         console.error("Error saving settings:", error);
+        showPopup("Error saving settings: " + error.message);
+    }
+}
+
+// Function to reset settings to default values
+async function resetToDefault() {
+    try {
+        // Default settings based on the application defaults
+        const defaultSettings = {
+            ping_timeout: 3,
+            log_level: "INFO",
+            check_interval: 30,
+            retry_interval: 1,
+            max_retries: 3,
+            parallel_pings: true,
+            ping_count: 3,
+            cache_ttl: 300
+        };
+
+        // Update UI with default values
+        document.getElementById("ping_timeout").value = defaultSettings.ping_timeout;
+        document.getElementById("log_level").value = defaultSettings.log_level;
+        document.getElementById("check_interval").value = defaultSettings.check_interval;
+        document.getElementById("retry_interval").value = defaultSettings.retry_interval;
+        document.getElementById("max_retries").value = defaultSettings.max_retries;
+
+        // Save the default settings to the server and refresh monitoring
+        const response = await fetch("/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(defaultSettings)
+        });
+        const result = await response.json();
+        console.log(result);
+
+        // Force refresh of monitoring by restarting the monitoring cycle
+        const refreshResponse = await fetch("/api/refresh_monitoring", {
+            method: "POST"
+        }).catch(err => {
+            console.log("Monitoring refresh not available, will refresh on next cycle");
+        });
+
+        // Show success popup
+        showPopup("Settings reset to default values and monitoring refreshed");
+    } catch (error) {
+        console.error("Error resetting settings:", error);
+        showPopup("Error resetting settings: " + error.message);
     }
 }
 

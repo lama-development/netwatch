@@ -1,11 +1,11 @@
-.PHONY: api install update clean
+.PHONY: start install update clean
 
 # mingw32-make.exe
 
 # WINDOWS: .venv\Scripts\Activate.ps1
 # LINUX: source .venv/bin/activate
 
-api:
+start:
 ifeq ($(OS),Windows_NT)
     fastapi dev src/main.py --host 0.0.0.0 --port 8000
 else

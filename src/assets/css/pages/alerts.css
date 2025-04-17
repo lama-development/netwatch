@@ -22,6 +22,14 @@ header h1 {
     margin-bottom: 20px;
 }
 
+/* Container for content sections */
+.content-container {
+    background-color: var(--color-navbar);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-hover);
+}
+
 /* Alert Dashboard Widget */
 .alerts-dashboard {
     background-color: var(--color-navbar);
@@ -269,7 +277,8 @@ tr:last-child td {
 }
 
 /* No Alerts Message */
-#no-alerts-message {
+#no-alerts-message,
+#no-history-message {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -278,14 +287,17 @@ tr:last-child td {
     color: var(--color-text);
 }
 
-#no-alerts-message i {
+#no-alerts-message i,
+#no-history-message i {
     font-size: 3rem;
     color: #28a745;
     margin-bottom: 1rem;
 }
 
-#no-alerts-message p {
+#no-alerts-message p,
+#no-history-message p {
     font-size: 1.25rem;
+    color: var(--color-text);
 }
 
 .hidden {
@@ -585,6 +597,123 @@ fieldset legend {
 .popup.error {
     background-color: #dc3545;
     border-color: #bd2130;
+}
+
+/* Aggiungo stili per la vista delle alert */
+.view-selector {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--color-hover);
+    width: fit-content;
+}
+
+.view-selector button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-selector button.selected {
+    background-color: var(--color-accent);
+    color: var(--color-pure);
+}
+
+.view-selector button:not(:last-child) {
+    border-right: 1px solid var(--color-hover);
+}
+
+.view-selector button:hover:not(.selected) {
+    background-color: var(--color-hover);
+}
+
+/* Stili coerenti per i controlli di paginazione */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#pagination,
+#history-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#pagination button,
+#history-pagination button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: var(--color-accent);
+    color: var(--color-pure);
+    font-size: 0.875rem;
+    font-weight: var(--font-semibold);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+#pagination span,
+#history-pagination span {
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+#pagination button:disabled,
+#history-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#pagination button:not(:disabled):hover,
+#history-pagination button:not(:disabled):hover {
+    opacity: 0.9;
+}
+
+/* Stili per i badge di stato degli alert */
+.status-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: rgba(230, 126, 34, 0.2);
+    color: #e67e22;
+}
+
+.status-badge.resolved {
+    background-color: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+}
+
+/* Stili per il modale di dettaglio */
+.auto-resolve-note {
+    text-align: center;
+    font-style: italic;
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+}
+
+/* Stili per le righe cliccabili nella tabella cronologia */
+#history-table-body tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#history-table-body tr:hover {
+    background-color: var(--color-hover);
 }
 
 /* Responsive Design */

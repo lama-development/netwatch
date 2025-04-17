@@ -229,7 +229,7 @@ def delete_setting(db: Session, key: str):
     return False
 
 # Alert CRUD operations with optimized queries
-def get_alerts(db: Session, skip: int = 0, limit: int = 100, status: str = None):
+def get_alerts(db: Session, skip: int = 0, limit: int = 100, status: str = None, exclude_resolved: bool = False, include_history: bool = False):
     """
     Retrieve alerts from the database with optional filtering and pagination.
     
@@ -237,15 +237,54 @@ def get_alerts(db: Session, skip: int = 0, limit: int = 100, status: str = None)
         db: Database session
         skip: Number of records to skip (for pagination)
         limit: Maximum number of records to return
-        status: Optional filter for alert status (active, acknowledged, resolved)
+        status: Optional filter for alert status (active, resolved)
+        exclude_resolved: If True, exclude alerts with status="resolved"
+        include_history: If True, include resolved alerts (for history view)
         
     Returns:
         List of Alert objects
     """
     query = db.query(Alert)
+    
+    # Apply filters
     if status:
         query = query.filter(Alert.status == status)
-    return query.order_by(Alert.timestamp.desc()).offset(skip).limit(limit).all()
+    elif exclude_resolved and not include_history:
+        query = query.filter(Alert.status != "resolved")
+    elif include_history:
+        # For history view, we want both active and resolved alerts
+        pass
+        
+    # Always sort by timestamp, with most recent first
+    query = query.order_by(Alert.timestamp.desc())
+    
+    return query.offset(skip).limit(limit).all()
+
+def get_alert_history(db: Session, days_back: int = 30, skip: int = 0, limit: int = 100):
+    """
+    Retrieve alert history including resolved alerts.
+    
+    Args:
+        db: Database session
+        days_back: Number of days to look back for history
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
+        
+    Returns:
+        List of Alert objects
+    """
+    from datetime import datetime, timedelta
+    
+    # Calculate the cutoff date
+    cutoff_date = datetime.now() - timedelta(days=days_back)
+    
+    # Get all alerts (both active and resolved) from the cutoff date
+    query = db.query(Alert).filter(Alert.timestamp >= cutoff_date)
+    
+    # Order by timestamp, most recent first
+    query = query.order_by(Alert.timestamp.desc())
+    
+    return query.offset(skip).limit(limit).all()
 
 def get_alert(db: Session, alert_id: int):
     """

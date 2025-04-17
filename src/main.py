@@ -478,9 +478,14 @@ async def stream_alerts():
     _cache['connected_clients'].add(client_id)
     
     try:
+        # Invia immediatamente gli alert esistenti
+        initial_alerts = get_latest_alerts()
+        if initial_alerts:
+            yield f"data: {json.dumps(initial_alerts)}\n\n"
+        
         # Function to yield latest alerts
         async def generate():
-            last_sent_time = 0
+            last_sent_time = time.time()
             
             while not shutdown_event.is_set():
                 # Get latest alerts from the queue
@@ -489,14 +494,18 @@ async def stream_alerts():
                 
                 if new_alerts:
                     # Update last sent time
-                    last_sent_time = max(a['timestamp'] for a in new_alerts)
+                    last_sent_time = time.time()
                     yield f"data: {json.dumps(new_alerts)}\n\n"
                 
                 await asyncio.sleep(1)
                 
-        return StreamingResponse(generate(), media_type="text/event-stream")
+        # Genera il flusso SSE
+        async for data in generate():
+            yield data
+            
     finally:
         _cache['connected_clients'].discard(client_id)
+        logging.info(f"Client SSE {client_id} disconnesso")
 
 
 @app.get("/api/alerts")
@@ -504,13 +513,14 @@ def get_api_alerts(
     skip: int = 0, 
     limit: int = 100, 
     status: Optional[str] = None,
+    exclude_resolved: bool = False,
     db: Session = Depends(get_db)
 ):
     """
     Retrieve alerts with optional filtering and pagination.
     """
     try:
-        alerts = crud.get_alerts(db, skip=skip, limit=limit, status=status)
+        alerts = crud.get_alerts(db, skip=skip, limit=limit, status=status, exclude_resolved=exclude_resolved)
         
         # Format the alerts with device names
         result = []
@@ -624,3 +634,120 @@ def get_device_metrics(device_id: int, timeframe: str = "1h", db: Session = Depe
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving device metrics: {str(e)}")
+
+
+@app.post("/api/refresh_monitoring")
+async def refresh_monitoring():
+    """
+    Restart the monitoring system to apply setting changes immediately.
+    This will stop the current monitoring thread and start a new one.
+    """
+    try:
+        # Import shutdown_event directly to be able to reset it
+        from app.monitor import shutdown_event
+        
+        # Stop the current monitoring
+        stop_monitor()
+        logging.info("Monitoring stopped for refresh")
+        
+        # Small delay to ensure clean shutdown
+        await asyncio.sleep(1)
+        
+        # Reset the shutdown event so the new thread won't exit immediately
+        shutdown_event.clear()
+        
+        # Start a new monitoring thread
+        monitor_thread = threading.Thread(target=start_monitor, daemon=True)
+        monitor_thread.start()
+        logging.info("Monitoring restarted after settings change")
+        
+        return {"message": "Monitoring system refreshed successfully"}
+    except Exception as e:
+        logging.error(f"Error refreshing monitoring: {e}")
+        raise HTTPException(status_code=500, detail=f"Error refreshing monitoring: {str(e)}")
+
+
+@app.get("/api/alerts/history")
+def get_api_alert_history(
+    days: int = 30,
+    skip: int = 0, 
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve alert history with optional filtering and pagination.
+    """
+    try:
+        alerts = crud.get_alert_history(db, days_back=days, skip=skip, limit=limit)
+        
+        # Format the alerts with device names and calculated data
+        result = []
+        for alert in alerts:
+            # Get the device name
+            device = crud.get_device(db, alert.device_id)
+            device_name = device.name if device else "Unknown Device"
+            
+            # Format timestamps
+            timestamp = alert.timestamp.isoformat() if alert.timestamp else None
+            resolved_at = alert.resolved_at.isoformat() if alert.resolved_at else None
+            
+            result.append({
+                "id": alert.id,
+                "device_id": alert.device_id,
+                "device_name": device_name,
+                "timestamp": timestamp,
+                "severity": alert.severity,
+                "type": alert.type,
+                "message": alert.message,
+                "description": alert.description,
+                "status": alert.status,
+                "resolved_at": resolved_at,
+                "duration": alert.duration,
+                "resolution_note": alert.resolution_note
+            })
+        
+        return {"alerts": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving alert history: {str(e)}")
+
+
+@app.get("/api/alerts/{alert_id}")
+def get_alert_by_id(alert_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieve a specific alert by its ID.
+    """
+    try:
+        alert = crud.get_alert(db, alert_id)
+        if not alert:
+            raise HTTPException(status_code=404, detail="Alert not found")
+            
+        # Get the device name
+        device = crud.get_device(db, alert.device_id)
+        device_name = device.name if device else "Unknown Device"
+        
+        # Format timestamps
+        timestamp = alert.timestamp.isoformat() if alert.timestamp else None
+        resolved_at = alert.resolved_at.isoformat() if alert.resolved_at else None
+        
+        # Format the response
+        result = {
+            "id": alert.id,
+            "device_id": alert.device_id,
+            "device_name": device_name,
+            "timestamp": timestamp,
+            "severity": alert.severity,
+            "type": alert.type,
+            "message": alert.message,
+            "description": alert.description,
+            "status": alert.status,
+            "resolved_at": resolved_at,
+            "duration": alert.duration,
+            "resolution_note": alert.resolution_note
+        }
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error retrieving alert details: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving alert details: {str(e)}")

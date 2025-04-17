@@ -4,6 +4,7 @@ import json
 import logging
 import threading
 import concurrent.futures
+from datetime import datetime
 from collections import defaultdict, deque
 from ping3 import ping
 from app.db.database import SessionLocal
@@ -150,6 +151,12 @@ def update_device_status(device_id, ip, new_status, packet_loss=None, jitter=Non
                 settings = load_settings()
                 check_interval = settings.get("check_interval", 30)
                 device.uptime = device.uptime + (check_interval / 3600)  # Convert to hours
+                
+                # If device has transitioned from offline to online, resolve any active alerts
+                if previous_status == "offline":
+                    # Auto-resolve any active connectivity alerts for this device
+                    auto_resolve_alerts(db, device)
+                    
             elif new_status == "offline" and previous_status == "online":
                 # Reset uptime counter when device goes offline
                 device.uptime = 0
@@ -161,11 +168,8 @@ def update_device_status(device_id, ip, new_status, packet_loss=None, jitter=Non
                     create_alert(db, device.id, "critical", "Connectivity", 
                                 f"Device {device.name} is offline",
                                 f"The device at {device.ip} is no longer responding to ping requests.")
-                elif previous_status == "offline" and new_status == "online":
-                    # Create an info alert when device comes back online
-                    create_alert(db, device.id, "info", "Connectivity", 
-                                f"Device {device.name} is back online",
-                                f"The device at {device.ip} has restored connectivity.")
+                # Rimuovo la creazione dell'alert info quando un device torna online
+                # Lo storico sarà disponibile nella cronologia degli alert
                 
                 # Update cache with the new status
                 device_status_cache[current_key] = time.time()
@@ -189,6 +193,46 @@ def update_device_status(device_id, ip, new_status, packet_loss=None, jitter=Non
     finally:
         db.close()
 
+def auto_resolve_alerts(db, device):
+    """Automatically resolve active alerts when a device comes back online."""
+    try:
+        # Find all active alerts for this device
+        active_alerts = db.query(Alert).filter(
+            Alert.device_id == device.id,
+            Alert.status == "active"
+        ).all()
+        
+        current_time = datetime.now()
+        
+        # Resolve each alert and calculate incident duration
+        for alert in active_alerts:
+            # Calculate incident duration
+            start_time = alert.timestamp
+            duration_seconds = (current_time - start_time).total_seconds()
+            
+            # Format duration as a human-readable string
+            hours, remainder = divmod(duration_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            duration_formatted = f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+            
+            # Update the alert
+            alert.status = "resolved"
+            alert.resolved_at = current_time
+            alert.duration = duration_formatted
+            alert.resolution_note = "Automatically resolved - device is back online"
+            
+            logging.info(f"Auto-resolved alert '{alert.message}' for {device.name}. Duration: {duration_formatted}")
+            
+        db.commit()
+        
+        # Clear from notification queue
+        global alert_queue
+        alert_queue = deque([a for a in alert_queue if not (a['device_id'] == device.id)], maxlen=100)
+        
+    except Exception as e:
+        logging.error(f"Error auto-resolving alerts: {e}")
+        db.rollback()
+
 def create_alert(db, device_id, severity, alert_type, message, description=None):
     """Create a new alert in the database and add to notification queue."""
     try:
@@ -200,10 +244,19 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
             Alert.status == "active"
         ).first()
         
-        # Don't create duplicate alerts
+        # Don't create duplicate alerts if there's an active one
         if existing_alert:
+            logging.info(f"Alert già esistente per il device {device_id}, non ne creo uno nuovo")
             return
-            
+        
+        # Pulisci la cache dello stato del dispositivo per consentire la creazione di 
+        # nuovi alert anche se un alert simile è stato risolto recentemente
+        for key in list(device_status_cache.keys()):
+            if str(device_id) in key:
+                logging.info(f"Rimuovo chiave dalla cache: {key}")
+                del device_status_cache[key]
+        
+        # Crea il nuovo alert
         alert_data = {
             "device_id": device_id,
             "severity": severity,
@@ -212,6 +265,8 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
             "description": description,
             "status": "active"
         }
+        
+        logging.info(f"Creazione nuovo alert: {message} per device {device_id}")
         new_alert = crud.create_alert(db, alert_data)
         
         # Add to notification queue for real-time updates
@@ -224,7 +279,9 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
                 "timestamp": time.time()
             })
             
-        logging.info(f"Alert created: {severity} - {message}")
+            logging.info(f"Alert creato con successo: {severity} - {message}")
+        else:
+            logging.error(f"Errore nella creazione dell'alert per il device {device_id}")
     except Exception as e:
         logging.error(f"Error creating alert: {e}")
 

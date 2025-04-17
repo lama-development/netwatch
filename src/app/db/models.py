@@ -53,3 +53,6 @@ class Alert(Base):
     message = Column(String, nullable=False)
     description = Column(String, nullable=True)
     status = Column(String, default="active", nullable=False)  # active, acknowledged, resolved
+    resolved_at = Column(DateTime, nullable=True)
+    duration = Column(String, nullable=True)
+    resolution_note = Column(String, nullable=True)

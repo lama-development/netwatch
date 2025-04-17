@@ -9,9 +9,14 @@
 {% block content %}
 <header>
     <h1>Alerts</h1>
+    <div class="view-selector">
+        <button id="active-alerts-btn" class="selected">Active Alerts</button>
+        <button id="alert-history-btn">Alert History</button>
+    </div>
 </header>
 
-<section>
+<!-- Sezione Alert Attivi -->
+<section id="active-alerts-section">
     <div class="alerts-dashboard">
         <div class="alerts-summary">
             <div id="total-alerts" class="total-number">0</div>
@@ -36,81 +41,92 @@
             </div>
         </div>
     </div>
-</section>
 
-<section id="alerts-list">
-    <div class="alerts-header">
-        <h2>Active Alerts</h2>
-        <div class="alert-actions">
-            <!-- Refresh button removed as it should update automatically -->
-            <select id="filter-severity" class="filter-select">
-                <option value="all">All Severities</option>
-                <option value="critical">Critical</option>
-                <option value="warning">Warning</option>
-                <option value="info">Info</option>
-            </select>
-            <select id="filter-status" class="filter-select">
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="acknowledged">Acknowledged</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th data-sort="timestamp">Time <i class='bx bx-sort'></i></th>
-                    <th data-sort="device">Device <i class='bx bx-sort'></i></th>
-                    <th data-sort="severity">Severity <i class='bx bx-sort'></i></th>
-                    <th data-sort="type">Type <i class='bx bx-sort'></i></th>
-                    <th data-sort="message">Message <i class='bx bx-sort'></i></th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="alerts-table-body">
-                <!-- Alert rows will be inserted here via JavaScript -->
-            </tbody>
-        </table>
-    </div>
-    <div id="pagination"></div>
-    
-    <div id="no-alerts-message" class="hidden">
-        <i class='bx bx-check-circle'></i>
-        <p>No alerts found. All systems operating normally.</p>
-    </div>
-</section>
-
-<section id="alert-settings">
-    <h2>Alert Settings</h2>
-    <form id="alert-settings-form">
-        <div class="form-group">
-            <label for="email-notifications">Email Notifications</label>
-            <div class="checkbox-container">
-                <input type="checkbox" id="email-notifications" name="email_notifications">
-                <label for="email-notifications">Receive email notifications for critical alerts</label>
+    <div class="content-container">
+        <div class="alerts-header">
+            <h2>Active Alerts</h2>
+            <div class="alert-actions">
+                <select id="filter-severity" class="filter-select">
+                    <option value="all">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="warning">Warning</option>
+                    <option value="info">Info</option>
+                </select>
             </div>
         </div>
         
-        <div class="form-group">
-            <label for="notification-email">Notification Email</label>
-            <input type="email" id="notification-email" name="notification_email" placeholder="your@email.com">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th data-sort="timestamp">Time <i class='bx bx-sort'></i></th>
+                        <th data-sort="device">Device <i class='bx bx-sort'></i></th>
+                        <th data-sort="severity">Severity <i class='bx bx-sort'></i></th>
+                        <th data-sort="type">Type <i class='bx bx-sort'></i></th>
+                        <th data-sort="message">Message <i class='bx bx-sort'></i></th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="alerts-table-body">
+                    <!-- Alert rows will be inserted here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div id="pagination"></div>
+        
+        <div id="no-alerts-message" class="hidden">
+            <i class='bx bx-check-circle'></i>
+            <p>No alerts found. All systems operating normally.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Sezione Cronologia Alert -->
+<section id="alert-history-section" class="hidden">
+    <div class="content-container">
+        <div class="alerts-header">
+            <h2>Alert History</h2>
+            <div class="alert-actions">
+                <select id="history-days" class="filter-select">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                </select>
+                <select id="history-severity" class="filter-select">
+                    <option value="all">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="warning">Warning</option>
+                    <option value="info">Info</option>
+                </select>
+            </div>
         </div>
         
-        <div class="form-group">
-            <label for="alert-retention">Alert Retention (days)</label>
-            <input type="number" id="alert-retention" name="alert_retention" min="1" max="90" value="30">
-            <p class="description">Number of days to keep alert history.</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th data-sort="timestamp">Start Time <i class='bx bx-sort'></i></th>
+                        <th data-sort="resolved_at">End Time <i class='bx bx-sort'></i></th>
+                        <th data-sort="duration">Duration <i class='bx bx-sort'></i></th>
+                        <th data-sort="device">Device <i class='bx bx-sort'></i></th>
+                        <th data-sort="severity">Severity <i class='bx bx-sort'></i></th>
+                        <th data-sort="type">Type <i class='bx bx-sort'></i></th>
+                        <th data-sort="message">Message <i class='bx bx-sort'></i></th>
+                        <th data-sort="status">Status <i class='bx bx-sort'></i></th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <!-- History rows will be inserted here via JavaScript -->
+                </tbody>
+            </table>
         </div>
+        <div id="history-pagination"></div>
         
-        <button type="submit" class="save-button">
-            <i class='bx bx-save'></i> Save Settings
-        </button>
-    </form>
-    
-    <!-- Popup for confirmation messages -->
-    <div id="popup" class="popup"></div>
+        <div id="no-history-message" class="hidden">
+            <i class='bx bx-history'></i>
+            <p>No alert history found for the selected period.</p>
+        </div>
+    </div>
 </section>
 
 <!-- Alert Details Modal -->
@@ -149,14 +165,18 @@
                 <span class="detail-label">Description:</span>
                 <p id="modal-description" class="detail-value"></p>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button id="acknowledge-alert" class="action-button acknowledge">
-                <i class='bx bx-check'></i> Acknowledge Alert
-            </button>
-            <button id="resolve-alert" class="action-button resolve">
-                <i class='bx bx-check-double'></i> Resolve Alert
-            </button>
+            <div class="alert-detail resolved-detail hidden">
+                <span class="detail-label">Resolved At:</span>
+                <span id="modal-resolved-at" class="detail-value"></span>
+            </div>
+            <div class="alert-detail resolved-detail hidden">
+                <span class="detail-label">Duration:</span>
+                <span id="modal-duration" class="detail-value"></span>
+            </div>
+            <div class="alert-detail resolved-detail hidden">
+                <span class="detail-label">Resolution Note:</span>
+                <p id="modal-resolution-note" class="detail-value"></p>
+            </div>
         </div>
     </div>
 </div>
