@@ -7,7 +7,7 @@
 
 start:
 ifeq ($(OS),Windows_NT)
-    fastapi dev src/main.py --host 0.0.0.0 --port 8000
+	fastapi dev src/main.py --host 0.0.0.0 --port 8000
 else
 	sudo $(CURDIR)/.venv/bin/fastapi dev src/main.py --host 0.0.0.0 --port 8000
 endif

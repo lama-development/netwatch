@@ -168,8 +168,8 @@ def update_device_status(device_id, ip, new_status, packet_loss=None, jitter=Non
                     create_alert(db, device.id, "critical", "Connectivity", 
                                 f"Device {device.name} is offline",
                                 f"The device at {device.ip} is no longer responding to ping requests.")
-                # Rimuovo la creazione dell'alert info quando un device torna online
-                # Lo storico sarà disponibile nella cronologia degli alert
+                # Removed creation of info alert when a device comes back online
+                # The history will be available in the alert history
                 
                 # Update cache with the new status
                 device_status_cache[current_key] = time.time()
@@ -246,17 +246,17 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
         
         # Don't create duplicate alerts if there's an active one
         if existing_alert:
-            logging.info(f"Alert già esistente per il device {device_id}, non ne creo uno nuovo")
+            logging.info(f"Alert already exists for device {device_id}, not creating a new one")
             return
         
-        # Pulisci la cache dello stato del dispositivo per consentire la creazione di 
-        # nuovi alert anche se un alert simile è stato risolto recentemente
+        # Clean the device status cache to allow creation of
+        # new alerts even if a similar alert was recently resolved
         for key in list(device_status_cache.keys()):
             if str(device_id) in key:
-                logging.info(f"Rimuovo chiave dalla cache: {key}")
+                logging.info(f"Removing key from cache: {key}")
                 del device_status_cache[key]
         
-        # Crea il nuovo alert
+        # Create the new alert
         alert_data = {
             "device_id": device_id,
             "severity": severity,
@@ -266,7 +266,7 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
             "status": "active"
         }
         
-        logging.info(f"Creazione nuovo alert: {message} per device {device_id}")
+        logging.info(f"Creating new alert: {message} for device {device_id}")
         new_alert = crud.create_alert(db, alert_data)
         
         # Add to notification queue for real-time updates
@@ -279,9 +279,9 @@ def create_alert(db, device_id, severity, alert_type, message, description=None)
                 "timestamp": time.time()
             })
             
-            logging.info(f"Alert creato con successo: {severity} - {message}")
+            logging.info(f"Alert created successfully: {severity} - {message}")
         else:
-            logging.error(f"Errore nella creazione dell'alert per il device {device_id}")
+            logging.error(f"Error creating alert for device {device_id}")
     except Exception as e:
         logging.error(f"Error creating alert: {e}")
 
